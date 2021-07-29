@@ -68,10 +68,10 @@ export function Initialise(gl, canvas) {
     let lastMouseY = 0;
     let mouseX = 0;
     let mouseY = 0;
-    document.onmousemove = function(event) {
-        mouseX = event.clientX;
-        mouseY = event.clientY;        
-    }
+    // document.onmousemove = function(event) {
+    //     mouseX = event.clientX;
+    //     mouseY = event.clientY;        
+    // }
 
 
     let time = 0;
