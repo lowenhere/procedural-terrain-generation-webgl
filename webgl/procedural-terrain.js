@@ -1,4 +1,4 @@
-import { glMatrix, mat4} from 'gl-matrix';
+import { glMatrix, mat4, quat, vec3 } from 'gl-matrix';
 import glUtils from '../src/gl-utils';
 import { flatVertexShaderText, fragmentShaderText, waterVertexShaderText } from '../src/shaders';
 import { Terrain } from '../src/terrain';
@@ -101,13 +101,33 @@ export function Initialise(gl, canvas) {
 
         //rotate
         // angle = performance.now() / 10000 / 6 * 2 * Math.PI;
-        let deltaAngleHor = deltaMouseX * Math.PI/1000;
-        let deltaAngleVert = deltaMouseY * Math.PI/1000;
-        eulerRot.y += deltaAngleHor;
-        eulerRot.x += deltaAngleVert;
-        mat4.rotate(worldMatrix, rotationMatrix, eulerRot.y, [0, 1, 0]); //rotate camera around y axis
-        mat4.rotate(worldMatrix, worldMatrix, eulerRot.x, [1, 0, 0]); //rotate camera around y axis
-        mat4.rotate(worldMatrix, worldMatrix, eulerRot.z, [0, 0, 1]); //rotate camera around y axis
+        let deltaAngleHor = deltaMouseX * Math.PI/10;
+        let deltaAngleVert = deltaMouseY * Math.PI/10;
+        eulerRot.y -= deltaAngleHor;
+        eulerRot.x -= deltaAngleVert;
+
+        let forward = vec3.fromValues(0, -5, -6);
+
+        const cameraQuaternionRotation = quat.create();
+        quat.fromEuler(cameraQuaternionRotation, eulerRot.x, eulerRot.y, eulerRot.z);
+        let cameraLookDir = vec3.create();
+        vec3.transformQuat(cameraLookDir, forward, cameraQuaternionRotation);
+        
+        
+        const cameraPos = vec3.fromValues(0, 5, 6);
+        let lookAtPoint = vec3.create();
+        vec3.add(lookAtPoint, cameraPos, cameraLookDir);
+        console.log(cameraLookDir)
+        // const lookAt = [0, 0, 0];
+        const up = vec3.fromValues(0, 1, 0);
+        mat4.lookAt(viewMatrix, cameraPos, lookAtPoint, up);
+        // mat4.translate(viewMatrix, viewMatrix, [0, -5, -6]);
+        // mat4.rotate(rotationMatrix, rotationMatrix, eulerRot.y, [0, 1, 0]); //rotate camera around y axis
+        // mat4.rotate(rotationMatrix, rotationMatrix, eulerRot.x, [1, 0, 0]); //rotate camera around y axis
+        // mat4.rotate(rotationMatrix, rotationMatrix, eulerRot.z, [0, 0, 1]); //rotate camera around y axis
+        // mat4.translate(viewMatrix, viewMatrix, [0, 5, 6]);
+        // mat4.translate(viewMatrix, viewMatrix, cameraPos);
+        // viewMatrix = mat4.mul(rotationMatrix, rotationMatrix);
 
         Terrain.render(worldMatrix, viewMatrix, projMatrix);
         Water.render(worldMatrix, viewMatrix, projMatrix, time);
