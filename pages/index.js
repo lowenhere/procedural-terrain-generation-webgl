@@ -1,16 +1,16 @@
 import Head from 'next/head'
 import { useEffect, useRef } from "react"
 
-import spinningCube from "../webgl/spinning-cube"
+import { Initialise } from "../webgl/procedural-terrain"
 import styles from '../styles/Home.module.css'
 
 export default function Home() {
   const ref = useRef();
 
   useEffect(()=>{
-    const gl = ref.current.getContext('webgl');
+    const gl = ref.current.getContext('webgl2');
     
-    spinningCube(gl);
+    Initialise(gl, ref.current);
   })
 
   return (
