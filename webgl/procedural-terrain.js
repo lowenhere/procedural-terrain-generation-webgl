@@ -75,8 +75,6 @@ export function Initialise(gl, canvas) {
 
 
     let time = 0;
-    let startTime = performance.now();
-    let lastTime = 0;
     let eulerRot = {
         x: 0,
         y: 0,
@@ -87,31 +85,15 @@ export function Initialise(gl, canvas) {
         gl.clearColor(0.75, 0.85, 0.8, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        time = (now - startTime);        
-        let deltaTime = (time - lastTime)/1000;
-        lastTime = time;
-
-        if(lastMouseX != 0 && lastMouseY != 0) {
-            deltaMouseX = (mouseX - lastMouseX);
-            deltaMouseY = (mouseY - lastMouseY);
-        }
-
-        lastMouseX = mouseX;
-        lastMouseY = mouseY;
+        
 
         //rotate
-        // angle = performance.now() / 10000 / 6 * 2 * Math.PI;
-        let deltaAngleHor = deltaMouseX * Math.PI/1000;
-        let deltaAngleVert = deltaMouseY * Math.PI/1000;
-        eulerRot.y += deltaAngleHor;
-        eulerRot.x += deltaAngleVert;
-        mat4.rotate(worldMatrix, rotationMatrix, eulerRot.y, [0, 1, 0]); //rotate camera around y axis
-        mat4.rotate(worldMatrix, worldMatrix, eulerRot.x, [1, 0, 0]); //rotate camera around y axis
-        mat4.rotate(worldMatrix, worldMatrix, eulerRot.z, [0, 0, 1]); //rotate camera around y axis
+        angle = performance.now() / 10000 / 6 * 2 * Math.PI;
+        mat4.rotate(worldMatrix, rotationMatrix, angle, [0, 1, 0]); //rotate around y axis
 
         Terrain.render(worldMatrix, viewMatrix, projMatrix);
         Water.render(worldMatrix, viewMatrix, projMatrix, time);
-        // gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+
         requestAnimationFrame(loop);
     }
 
