@@ -135,8 +135,10 @@ export function Initialise(gl, canvas) {
         let deltaAngleVert = deltaMouseY * Math.PI/10;
         deltaMouseX = 0;
         deltaMouseY = 0;
+        
         Camera.transform.rotation[1] -= deltaAngleHor;
-        Camera.transform.rotation[0] += deltaAngleVert;
+        Camera.transform.rotation[0] = Math.min(89, Math.max(deltaAngleVert + Camera.transform.rotation[0], -89));
+        console.log(Camera.transform.rotation[0]);
 
         //========================================================================
         //
@@ -155,7 +157,7 @@ export function Initialise(gl, canvas) {
                     //move inlocal space
                     vec3.transformQuat(moveVector, movementBindings[key], Camera.transform.quatRotation);
                 }
-
+                
                 let speedModifier = (inputKeys[' '] ? 3 : 1);
                 vec3.normalize(moveVector, moveVector);
                 vec3.scale(moveVector, moveVector, Camera.moveSpeed * deltaTime * speedModifier);
