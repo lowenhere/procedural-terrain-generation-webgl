@@ -14,9 +14,9 @@ const loadObjString = (objString) => {
         faces: [],
     }
 
-    const vRegex = /v[ \t](-?\d*.?\d*)[ \t](-?\d*.?\d*)[ \t](-?\d*.?\d*)/g;
-    const vnRegex = /vn[ \t](-?\d*.?\d*)[ \t](-?\d*.?\d*)[ \t](-?\d*.?\d*)/g;
-    const fRegex = /f[ \t](\d*)\/(\d*)\/(\d*)[ \t](\d*)\/(\d*)\/(\d*)[ \t](\d*)\/(\d*)\/(\d*)/g;
+    const vRegex = /v\s+(-?\d*.?\d*)\s+(-?\d*.?\d*)\s+(-?\d*.?\d*)/g;
+    const vnRegex = /vn\s+(-?\d*.?\d*)\s+(-?\d*.?\d*)\s+(-?\d*.?\d*)/g;
+    const fRegex = /f\s+(\d*)\/(\d*)\/(\d*)\s+(\d*)\/(\d*)\/(\d*)\s+(\d*)\/(\d*)\/(\d*)/g;
 
     const lines = objString.split("\n");
 
