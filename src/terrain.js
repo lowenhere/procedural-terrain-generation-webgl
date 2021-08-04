@@ -16,6 +16,7 @@ export const Terrain = {
             world: undefined,
             view: undefined,
             proj: undefined,
+            clipEnabled: undefined,
         }
     },
     /**
@@ -36,7 +37,7 @@ export const Terrain = {
         //
         //========================================================================
         let perlinScale=4;
-        let heightScale=0.8;
+        let heightScale=1.8;
         let yFunc = (x,z)=>perlin2(x/perlinScale, z/perlinScale) * heightScale;
         let colorFunc = (y)=>{
             if(y <= 0.0) {
@@ -93,15 +94,14 @@ export const Terrain = {
         gl.enableVertexAttribArray(positionAttribLocation);
         gl.enableVertexAttribArray(colorAttribLocation);
         
-        this.initView();
-    },    
-    initView() {
         this.locations.uniform.world = this.gl.getUniformLocation(this.program, 'mWorld');
         this.locations.uniform.view = this.gl.getUniformLocation(this.program, 'mView');
         this.locations.uniform.proj = this.gl.getUniformLocation(this.program, 'mProj');
-    },
-    render(worldMatrix, viewMatrix, projMatrix) {
+        this.locations.uniform.clipEnabled = this.gl.getUniformLocation(this.program, 'clipEnabled');
+    },    
+    render(worldMatrix, viewMatrix, projMatrix, clipEnabled=false) {
         this.gl.useProgram(this.program);
+        this.gl.uniform1i(this.locations.uniform.clipEnabled, clipEnabled);
         this.gl.uniformMatrix4fv(this.locations.uniform.world, this.gl.FALSE, worldMatrix);
         this.gl.uniformMatrix4fv(this.locations.uniform.view, this.gl.FALSE, viewMatrix);
         this.gl.uniformMatrix4fv(this.locations.uniform.proj, this.gl.FALSE, projMatrix);

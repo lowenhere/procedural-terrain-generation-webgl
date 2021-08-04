@@ -2,7 +2,7 @@ import { mat4, quat, vec3, glMatrix } from "gl-matrix";
 
 const Camera = {
     transform: {
-        position: vec3.fromValues(0, 5, 12),
+        position: vec3.fromValues(0, 2, 12),
         rotation: vec3.fromValues(20, 180, 0),
         get quatRotation(){
             return Camera.computeRotationQuaternion();

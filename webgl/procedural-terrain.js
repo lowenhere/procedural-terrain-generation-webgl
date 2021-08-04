@@ -1,7 +1,7 @@
 import { glMatrix, mat4, quat, vec3 } from 'gl-matrix';
 import Camera from '../src/camera';
 import glUtils from '../src/gl-utils';
-import { flatVertexShaderText, flatWaterFragmentShaderText, fragmentShaderText, waterVertexShaderText } from '../src/shaders';
+import { flatFragmentShaderText, flatVertexShaderText, flatWaterFragmentShaderText, waterVertexShaderText } from '../src/shaders';
 import { Terrain } from '../src/terrain';
 import { Water } from '../src/water';
 
@@ -34,7 +34,7 @@ export function Initialise(gl, canvas) {
     //========================================================================
     let flatVertexShader = glUtils.createShader(flatVertexShaderText, gl.VERTEX_SHADER, gl);
     let waterVertexShader = glUtils.createShader(waterVertexShaderText, gl.VERTEX_SHADER, gl);
-    let fragmentShader = glUtils.createShader(fragmentShaderText, gl.FRAGMENT_SHADER, gl);
+    let fragmentShader = glUtils.createShader(flatFragmentShaderText, gl.FRAGMENT_SHADER, gl);
     let waterFragmentShader = glUtils.createShader(flatWaterFragmentShaderText, gl.FRAGMENT_SHADER, gl);
 
     //PROGRAM: create -> attach -> link -> validate
@@ -60,7 +60,8 @@ export function Initialise(gl, canvas) {
     //
     //========================================================================
     Terrain.init(flatMaterialProgram, gl);
-    Water.init(waterMaterialProgram, gl);
+    let waterHeight = -0.1;
+    Water.init(waterMaterialProgram, gl, waterHeight);
 
 
     //========================================================================
@@ -113,8 +114,8 @@ export function Initialise(gl, canvas) {
     //
     //========================================================================
 
-    let fb = gl.createFramebuffer();    
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    let refractionFrameBuffer = gl.createFramebuffer();    
+    gl.bindFramebuffer(gl.FRAMEBUFFER, refractionFrameBuffer);
     
     const textureWidth = canvas.width;
     const textureHeight = canvas.height;
@@ -138,6 +139,29 @@ export function Initialise(gl, canvas) {
     if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
         console.error('frame buffer attachment failed');
     }
+   
+    //========================================================================
+    //
+    //                       RENDER REFLECTION TEXTURE
+    //
+    //========================================================================
+
+    let reflectionFrameBuffer = gl.createFramebuffer();    
+    gl.bindFramebuffer(gl.FRAMEBUFFER, reflectionFrameBuffer);
+    
+    const reflectionTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, reflectionTexture);
+    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, textureWidth, textureHeight, border, format, type, data);
+    
+    // set the filtering so we don't need mips
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, reflectionTexture, level);
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+        console.error('frame buffer attachment failed');
+    }
 
     //========================================================================
     //
@@ -148,7 +172,6 @@ export function Initialise(gl, canvas) {
     let time = 0;
     let startTime = performance.now();
     let lastTime = 0;
-
 
     function loop(now) {
         //reset
@@ -209,8 +232,24 @@ export function Initialise(gl, canvas) {
         //                      RENDER TO REFRACTION TEXTURE                             
         //
         //========================================================================
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, refractionFrameBuffer);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         Terrain.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj);
+        
+        //========================================================================
+        //
+        //                      RENDER TO REFLECTION TEXTURE                             
+        //
+        //========================================================================
+        gl.bindFramebuffer(gl.FRAMEBUFFER, reflectionFrameBuffer);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        //assuming water is at pos y = 0, then camera to water distance is y pos of camera
+        let distance = (Camera.transform.position[1] - waterHeight) * 2;
+        Camera.transform.position[1] -= distance;
+        Camera.transform.rotation[0] = -Camera.transform.rotation[0]; //invert pitch
+        Terrain.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj, true);
+        Camera.transform.position[1] += distance;
+        Camera.transform.rotation[0] = -Camera.transform.rotation[0]; //invert pitch
 
         //========================================================================
         //
@@ -218,8 +257,8 @@ export function Initialise(gl, canvas) {
         //
         //========================================================================
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        Terrain.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj);
-        Water.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj, time, refractionTexture);
+        Terrain.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj, true);
+        Water.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj, time, refractionTexture, reflectionTexture, Camera.transform.position);
         requestAnimationFrame(loop);
     }
 

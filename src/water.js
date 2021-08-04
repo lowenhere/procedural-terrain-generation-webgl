@@ -19,6 +19,7 @@ export const Water = {
             distortionMoveFactor: undefined,
             refractionTexture: undefined,
             dudvMap: undefined,
+            cameraPosition: undefined,
         },
     },
     /**
@@ -26,7 +27,7 @@ export const Water = {
      * @param {*} program 
      * @param {WebGL2RenderingContext} gl 
      */
-    init(program, gl) {
+    init(program, gl, waterHeight=-0.1) {
         this.gl = gl;
         this.program = program;
         this.vao = gl.createVertexArray();
@@ -45,8 +46,8 @@ export const Water = {
         //                            MESH GENERATION                             
         //
         //========================================================================
-        let yFunc = (x,z)=>-0.1;
-        let colorFunc = (y)=>[0.3,0.5,1.0]
+        let yFunc = (x,z)=>waterHeight;
+        let colorFunc = (y)=>[52/255,235/255,229/255]
 
         let [ vertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(30, yFunc, colorFunc, 0.6);
         this.mesh.vertices = vertices;
@@ -72,6 +73,7 @@ export const Water = {
         this.locations.uniform.time = gl.getUniformLocation(program, 'time');        
         this.locations.uniform.distortionMoveFactor = gl.getUniformLocation(program, 'distortionMoveFactor');        
         this.locations.uniform.refractionTexture = gl.getUniformLocation(program, 'refractionTexture');
+        this.locations.uniform.reflectionTexture = gl.getUniformLocation(program, 'reflectionTexture');
         this.locations.uniform.dudvMap = gl.getUniformLocation(program, 'dudvMap');
         
         const valuesPerVertex = 6;
@@ -97,13 +99,11 @@ export const Water = {
         gl.enableVertexAttribArray(positionAttribLocation);
         gl.enableVertexAttribArray(colorAttribLocation);                
       
-        this.initView();
-    },    
-    initView() {
         this.locations.uniform.world = this.gl.getUniformLocation(this.program, 'mWorld');
         this.locations.uniform.view = this.gl.getUniformLocation(this.program, 'mView');
         this.locations.uniform.proj = this.gl.getUniformLocation(this.program, 'mProj');
-    },
+        this.locations.uniform.cameraPosition = this.gl.getUniformLocation(this.program, 'cameraPosition');
+    },    
     loadTexture(url) {
         const image = new Image();
         const texture = this.gl.createTexture();
@@ -145,24 +145,29 @@ export const Water = {
         image.src = url;
         return texture;
     },
-    render(worldMatrix, viewMatrix, projMatrix, time, refractionTexture) {        
+    render(worldMatrix, viewMatrix, projMatrix, time, refractionTexture, reflectionTexture, cameraPosition) {
         this.gl.useProgram(this.program);
         this.gl.uniform1f(this.locations.uniform.time, time/1000);
         this.gl.uniform1f(this.locations.uniform.distortionMoveFactor, (time/1000 * 0.05) % 1);
+        this.gl.uniform3fv(this.locations.uniform.cameraPosition, cameraPosition);
         this.gl.uniformMatrix4fv(this.locations.uniform.world, this.gl.FALSE, worldMatrix);
         this.gl.uniformMatrix4fv(this.locations.uniform.view, this.gl.FALSE, viewMatrix);
         this.gl.uniformMatrix4fv(this.locations.uniform.proj, this.gl.FALSE, projMatrix);
-        
 
-        //water
+        //refraction
         this.gl.activeTexture(this.gl.TEXTURE0);
         this.gl.bindTexture(this.gl.TEXTURE_2D, refractionTexture);
         this.gl.uniform1i(this.locations.uniform.refractionTexture, 0);
         
-        
+        //reflection
         this.gl.activeTexture(this.gl.TEXTURE1);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, reflectionTexture);
+        this.gl.uniform1i(this.locations.uniform.reflectionTexture, 1);
+        
+        //dudv
+        this.gl.activeTexture(this.gl.TEXTURE2);
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.dudvTexture);
-        this.gl.uniform1i(this.locations.uniform.dudvMap, 1);
+        this.gl.uniform1i(this.locations.uniform.dudvMap, 2);
 
         this.gl.bindVertexArray(this.vao);
         this.gl.drawElements(this.gl.TRIANGLES, this.mesh.indices.length, this.gl.UNSIGNED_SHORT, 0);
