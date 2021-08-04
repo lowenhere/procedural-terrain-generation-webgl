@@ -14,6 +14,10 @@ class OBJMesh {
         // TODO: should probably find a better name for this ...
         this.object = loadObjString(objString);
 
+        console.log(
+            this.object.vertices.flat().filter(v => v >= 1)
+        )
+
         // create and bind vertex array object
         this.vao = gl.createVertexArray();
         gl.bindVertexArray(this.vao);
@@ -69,7 +73,7 @@ class OBJMesh {
         gl.uniformMatrix4fv(locations.uniform.view, gl.FALSE, mView);
         gl.uniformMatrix4fv(locations.uniform.proj, gl.FALSE, mProj);
         gl.bindVertexArray(this.vao);
-        gl.drawElements(gl.TRIANGLES, this.object.faces.length, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(gl.TRIANGLES, 3 * this.object.faces.length, gl.UNSIGNED_SHORT, 0);
     }
 
 }
