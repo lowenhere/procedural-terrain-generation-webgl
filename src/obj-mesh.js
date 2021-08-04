@@ -44,16 +44,31 @@ class OBJMesh {
         );
 
         gl.enableVertexAttribArray(positionAttribLocation);
+
+        this.locations = {
+            uniform: {
+                world: gl.getUniformLocation(program, 'mWorld'),
+                view: gl.getUniformLocation(program, 'mView'),
+                proj: gl.getUniformLocation(program, 'mProj'),
+            }
+        };
+
     }
 
-    render() {
-        const { gl } = this;
+    /**
+     * Renders the mesh
+     * @param {mat4} mWorld
+     * @param {mat4} mView
+     * @param {mat4} mProj
+     */
+    render(mWorld, mView, mProj) {
+        const { gl, locations } = this;
 
         gl.useProgram(this.program);
+        gl.uniformMatrix4fv(locations.uniform.world, gl.FALSE, mWorld);
+        gl.uniformMatrix4fv(locations.uniform.view, gl.FALSE, mView);
+        gl.uniformMatrix4fv(locations.uniform.proj, gl.FALSE, mProj);
         gl.bindVertexArray(this.vao);
-
-        gl.clearColor(0.75, 0.85, 0.8, 1.0);
-        gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
         gl.drawElements(gl.TRIANGLES, this.object.faces.length, gl.UNSIGNED_SHORT, 0);
     }
 
