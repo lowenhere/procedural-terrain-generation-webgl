@@ -1,7 +1,7 @@
 import { glMatrix, mat4, quat, vec3 } from 'gl-matrix';
 import Camera from '../src/camera';
 import glUtils from '../src/gl-utils';
-import { flatVertexShaderText, fragmentShaderText, waterVertexShaderText } from '../src/shaders';
+import { flatVertexShaderText, flatWaterFragmentShaderText, fragmentShaderText, waterVertexShaderText } from '../src/shaders';
 import { Terrain } from '../src/terrain';
 import { Water } from '../src/water';
 
@@ -9,6 +9,7 @@ import { Water } from '../src/water';
  * 
  * @param {WebGL2RenderingContext} gl 
  * @param {HTMLCanvasElement} canvas 
+ * @param {WebGL2RenderingContext} textureGlContext 
  */
 export function Initialise(gl, canvas) {
     console.log("Initialising Web GL");
@@ -34,10 +35,11 @@ export function Initialise(gl, canvas) {
     let flatVertexShader = glUtils.createShader(flatVertexShaderText, gl.VERTEX_SHADER, gl);
     let waterVertexShader = glUtils.createShader(waterVertexShaderText, gl.VERTEX_SHADER, gl);
     let fragmentShader = glUtils.createShader(fragmentShaderText, gl.FRAGMENT_SHADER, gl);
+    let waterFragmentShader = glUtils.createShader(flatWaterFragmentShaderText, gl.FRAGMENT_SHADER, gl);
 
     //PROGRAM: create -> attach -> link -> validate
     let flatMaterialProgram = glUtils.createProgramWithShaders([flatVertexShader, fragmentShader], gl);
-    let waterMaterialProgram = glUtils.createProgramWithShaders([waterVertexShader, fragmentShader], gl);
+    let waterMaterialProgram = glUtils.createProgramWithShaders([waterVertexShader, waterFragmentShader], gl);
     
     //========================================================================
     //
@@ -105,6 +107,38 @@ export function Initialise(gl, canvas) {
     }
 
 
+    //========================================================================
+    //
+    //                            RENDER TO TEXTURe                             
+    //
+    //========================================================================
+
+    let fb = gl.createFramebuffer();    
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    
+    const textureWidth = canvas.width;
+    const textureHeight = canvas.height;
+    const targetTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, targetTexture);
+        // define size and format of level 0
+    const level = 0;
+    const internalFormat = gl.RGBA;
+    const border = 0;
+    const format = gl.RGBA;
+    const type = gl.UNSIGNED_BYTE;
+    const data = null;
+    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, textureWidth, textureHeight, border, format, type, data);
+    
+    // set the filtering so we don't need mips
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, targetTexture, level);
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+        console.error('frame buffer attachment failed');
+    }
+
     let time = 0;
     let startTime = performance.now();
     let lastTime = 0;
@@ -138,7 +172,6 @@ export function Initialise(gl, canvas) {
         
         Camera.transform.rotation[1] -= deltaAngleHor;
         Camera.transform.rotation[0] = Math.min(89, Math.max(deltaAngleVert + Camera.transform.rotation[0], -89));
-        console.log(Camera.transform.rotation[0]);
 
         //========================================================================
         //
@@ -166,8 +199,12 @@ export function Initialise(gl, canvas) {
         }
         // console.log(Camera.matrices)
 
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
         Terrain.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj);
-        Water.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj, time);
+        // Water.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj, time);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        Terrain.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj);
+        Water.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj, time, targetTexture);
         // gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
         requestAnimationFrame(loop);
     }

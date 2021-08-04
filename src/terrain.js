@@ -48,7 +48,7 @@ export const Terrain = {
             }
         }
 
-        let [ vertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(20, yFunc, colorFunc, 0.3);
+        let [ vertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(30, yFunc, colorFunc, 0.6);
         this.mesh.vertices = vertices;
         this.mesh.indices = indices;
 

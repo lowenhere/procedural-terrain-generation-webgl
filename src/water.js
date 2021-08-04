@@ -15,7 +15,8 @@ export const Water = {
             world: undefined,
             view: undefined,
             proj: undefined,
-            time: undefined
+            time: undefined,
+            uSampler: undefined
         },
     },
     /**
@@ -37,7 +38,7 @@ export const Water = {
         let yFunc = (x,z)=>-0.1;
         let colorFunc = (y)=>[0.3,0.5,1.0]
 
-        let [ vertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(20, yFunc, colorFunc, 0.3);
+        let [ vertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(30, yFunc, colorFunc, 0.6);
         this.mesh.vertices = vertices;
         this.mesh.indices = indices;
 
@@ -59,6 +60,7 @@ export const Water = {
         let positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
         let colorAttribLocation = gl.getAttribLocation(program, 'vertColor');        
         this.locations.uniform.time = gl.getUniformLocation(program, 'time');        
+        this.locations.uniform.uSampler = gl.getUniformLocation(program, 'uSampler');
         
         const valuesPerVertex = 6;
 
@@ -90,13 +92,25 @@ export const Water = {
         this.locations.uniform.view = this.gl.getUniformLocation(this.program, 'mView');
         this.locations.uniform.proj = this.gl.getUniformLocation(this.program, 'mProj');
     },
-    render(worldMatrix, viewMatrix, projMatrix, time) {        
+    render(worldMatrix, viewMatrix, projMatrix, time, texture) {        
         this.gl.useProgram(this.program);
         this.gl.uniform1f(this.locations.uniform.time, time/1000);
         this.gl.uniformMatrix4fv(this.locations.uniform.world, this.gl.FALSE, worldMatrix);
         this.gl.uniformMatrix4fv(this.locations.uniform.view, this.gl.FALSE, viewMatrix);
         this.gl.uniformMatrix4fv(this.locations.uniform.proj, this.gl.FALSE, projMatrix);
+        
+        // Tell WebGL we want to affect texture unit 0
+        this.gl.activeTexture(this.gl.TEXTURE0);
+
+        // Bind the texture to texture unit 0
+        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+
+        // Tell the shader we bound the texture to texture unit 0
+        this.gl.uniform1i(this.locations.uniform.uSampler, 0);
+
         this.gl.bindVertexArray(this.vao);
         this.gl.drawElements(this.gl.TRIANGLES, this.mesh.indices.length, this.gl.UNSIGNED_SHORT, 0);
+
+
     }
 }
