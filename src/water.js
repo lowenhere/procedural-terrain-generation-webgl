@@ -16,7 +16,9 @@ export const Water = {
             view: undefined,
             proj: undefined,
             time: undefined,
-            uSampler: undefined
+            distortionMoveFactor: undefined,
+            refractionTexture: undefined,
+            dudvMap: undefined,
         },
     },
     /**
@@ -29,6 +31,14 @@ export const Water = {
         this.program = program;
         this.vao = gl.createVertexArray();
         gl.bindVertexArray(this.vao);
+
+        //========================================================================
+        //
+        //                            LOAD DUDV IMAGE                             
+        //
+        //========================================================================
+        this.dudvTexture = this.loadTexture('/waterDUDV.png');
+
         
         //========================================================================
         //
@@ -60,7 +70,9 @@ export const Water = {
         let positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
         let colorAttribLocation = gl.getAttribLocation(program, 'vertColor');        
         this.locations.uniform.time = gl.getUniformLocation(program, 'time');        
-        this.locations.uniform.uSampler = gl.getUniformLocation(program, 'uSampler');
+        this.locations.uniform.distortionMoveFactor = gl.getUniformLocation(program, 'distortionMoveFactor');        
+        this.locations.uniform.refractionTexture = gl.getUniformLocation(program, 'refractionTexture');
+        this.locations.uniform.dudvMap = gl.getUniformLocation(program, 'dudvMap');
         
         const valuesPerVertex = 6;
 
@@ -92,25 +104,67 @@ export const Water = {
         this.locations.uniform.view = this.gl.getUniformLocation(this.program, 'mView');
         this.locations.uniform.proj = this.gl.getUniformLocation(this.program, 'mProj');
     },
-    render(worldMatrix, viewMatrix, projMatrix, time, texture) {        
+    loadTexture(url) {
+        const image = new Image();
+        const texture = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+        //init image before loaded
+        const level = 0;
+        const internalFormat = this.gl.RGBA;
+        const width = 1;
+        const height = 1;
+        const border = 0;
+        const srcFormat = this.gl.RGBA;
+        const srcType = this.gl.UNSIGNED_BYTE;
+        const pixel = new Uint8Array([0, 0, 255, 255]);  // opaque blue
+        this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat, width, height, border, srcFormat, srcType, pixel);
+
+        function isPowerOf2(value) {
+            return (value & (value - 1)) == 0;
+        }
+
+        image.onload = () => {
+            this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+            this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, image);
+
+            // WebGL1 has different requirements for power of 2 images
+            // vs non power of 2 images so check if the image is a
+            // power of 2 in both dimensions.
+            if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+                // Yes, it's a power of 2. Generate mips.
+                this.gl.generateMipmap(this.gl.TEXTURE_2D);
+            } else {
+                // No, it's not a power of 2. Turn off mips and set
+                // wrapping to clamp to edge
+                this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+                this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+                this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+            }
+        }
+
+        image.src = url;
+        return texture;
+    },
+    render(worldMatrix, viewMatrix, projMatrix, time, refractionTexture) {        
         this.gl.useProgram(this.program);
         this.gl.uniform1f(this.locations.uniform.time, time/1000);
+        this.gl.uniform1f(this.locations.uniform.distortionMoveFactor, (time/1000 * 0.05) % 1);
         this.gl.uniformMatrix4fv(this.locations.uniform.world, this.gl.FALSE, worldMatrix);
         this.gl.uniformMatrix4fv(this.locations.uniform.view, this.gl.FALSE, viewMatrix);
         this.gl.uniformMatrix4fv(this.locations.uniform.proj, this.gl.FALSE, projMatrix);
         
-        // Tell WebGL we want to affect texture unit 0
+
+        //water
         this.gl.activeTexture(this.gl.TEXTURE0);
-
-        // Bind the texture to texture unit 0
-        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-
-        // Tell the shader we bound the texture to texture unit 0
-        this.gl.uniform1i(this.locations.uniform.uSampler, 0);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, refractionTexture);
+        this.gl.uniform1i(this.locations.uniform.refractionTexture, 0);
+        
+        
+        this.gl.activeTexture(this.gl.TEXTURE1);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.dudvTexture);
+        this.gl.uniform1i(this.locations.uniform.dudvMap, 1);
 
         this.gl.bindVertexArray(this.vao);
         this.gl.drawElements(this.gl.TRIANGLES, this.mesh.indices.length, this.gl.UNSIGNED_SHORT, 0);
-
-
     }
 }

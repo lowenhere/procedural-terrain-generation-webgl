@@ -109,7 +109,7 @@ export function Initialise(gl, canvas) {
 
     //========================================================================
     //
-    //                            RENDER TO TEXTURe                             
+    //                       RENDER REFRACTION TEXTURE                             
     //
     //========================================================================
 
@@ -118,8 +118,8 @@ export function Initialise(gl, canvas) {
     
     const textureWidth = canvas.width;
     const textureHeight = canvas.height;
-    const targetTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, targetTexture);
+    const refractionTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, refractionTexture);
         // define size and format of level 0
     const level = 0;
     const internalFormat = gl.RGBA;
@@ -134,10 +134,16 @@ export function Initialise(gl, canvas) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, targetTexture, level);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, refractionTexture, level);
     if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
         console.error('frame buffer attachment failed');
     }
+
+    //========================================================================
+    //
+    //                       MAIN RENDER LOOP
+    //
+    //========================================================================
 
     let time = 0;
     let startTime = performance.now();
@@ -197,15 +203,23 @@ export function Initialise(gl, canvas) {
                 vec3.add(Camera.transform.position, Camera.transform.position, moveVector);
             }
         }
-        // console.log(Camera.matrices)
 
+        //========================================================================
+        //
+        //                      RENDER TO REFRACTION TEXTURE                             
+        //
+        //========================================================================
         gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
         Terrain.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj);
-        // Water.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj, time);
+
+        //========================================================================
+        //
+        //                            RENDER TO CANVAS                             
+        //
+        //========================================================================
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         Terrain.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj);
-        Water.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj, time, targetTexture);
-        // gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+        Water.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj, time, refractionTexture);
         requestAnimationFrame(loop);
     }
 
