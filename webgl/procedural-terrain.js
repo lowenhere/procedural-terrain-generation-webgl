@@ -53,9 +53,10 @@ export function Initialise(gl, canvas) {
     //                            INIT OBJECTS        
     //
     //========================================================================
-    Terrain.init(FlatShader.program, gl);
+    let size = 20;
+    Terrain.init(FlatShader.program, gl, size);
     let waterHeight = -0.1;
-    Water.init(WaterShader.program, gl, waterHeight);
+    Water.init(WaterShader.program, gl, size, waterHeight);
 
 
     //========================================================================

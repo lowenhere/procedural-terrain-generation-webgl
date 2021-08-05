@@ -27,7 +27,7 @@ export const Water = {
      * @param {*} program 
      * @param {WebGL2RenderingContext} gl 
      */
-    init(program, gl, waterHeight=-0.1) {
+    init(program, gl, size=30, waterHeight=-0.1) {
         this.gl = gl;
         this.program = program;
         this.vao = gl.createVertexArray();
@@ -49,7 +49,7 @@ export const Water = {
         let yFunc = (x,z)=>waterHeight;
         let colorFunc = (y)=>[52/255,235/255,229/255]
 
-        let [ vertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(30, yFunc, colorFunc, 0.6);
+        let [ vertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, yFunc, colorFunc, 0.6);
         this.mesh.vertices = vertices;
         this.mesh.indices = indices;
 

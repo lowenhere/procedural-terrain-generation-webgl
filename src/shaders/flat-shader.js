@@ -39,8 +39,8 @@ const FlatShader = {
         }
         vec3 offset = vec3(0.0, 0.0, 0.0) * 0.2;
         fragColor = vec4(vertColor, 1.0);    
-        vertexViewSpace = vec4(vertPosition + offset, 1.0);;
-        gl_Position = mProj * mView * mWorld *  vertexViewSpace;
+        vertexViewSpace = mWorld * vec4(vertPosition + offset, 1.0);;
+        gl_Position = mProj * mView * vertexViewSpace;
     }
     `,
     fragmentShaderText: `#version 300 es
@@ -72,7 +72,7 @@ const FlatShader = {
         vec3 vLighting = (directionalLightColor * directional);
     
         //ambient
-        vec3 ambient = directionalLightColor * 0.2;
+        vec3 ambient = directionalLightColor * 0.1;
     
         outputColor = vec4(fragColor.xyz * vLighting + ambient, 1.0);
     }

@@ -27,22 +27,23 @@ const WaterShader = {
     
     out vec3 toCameraVector;
     out vec4 color;
-    out vec4 vertexViewSpace;
+    out vec4 vertPositionAfterOffset;
     out vec4 clipSpacePreOffset;
     out vec2 dudvTextureCoordinates;
     
     const float dudvTiling = 0.2;
+    const float scale = 500.0;
     
     void main()
     {
-        float scale = 500.0;
+        mat4 _m = mProj * mView * mWorld;
         float timePositionValue = (time + vertPosition[0]*scale + vertPosition[2]*scale);
         vec3 offset = vec3(0.0, sin(time + vertPosition[0]*scale) + cos(time + vertPosition[2]*scale), 0.0) * 0.05;
         color = vec4(vertColor, 1.0);        
-        clipSpacePreOffset = mProj * mView * mWorld * vec4(vertPosition, 1.0);
+        clipSpacePreOffset = _m * vec4(vertPosition, 1.0);
         
-        vertexViewSpace = vec4(vertPosition + offset, 1.0);;
-        gl_Position = mProj * mView * mWorld * vertexViewSpace;
+        vertPositionAfterOffset = vec4(vertPosition + offset, 1.0);;
+        gl_Position = _m * vertPositionAfterOffset;
         dudvTextureCoordinates = vec2(vertPosition.x/2.0 + 0.5, vertPosition.z/2.0 + 0.5) * dudvTiling;
     
         toCameraVector = (cameraPosition - vertPosition.xyz);
@@ -52,7 +53,7 @@ const WaterShader = {
     // #extension GL_OES_standard_derivatives : enable
     precision mediump float;
     
-    in vec4 vertexViewSpace;
+    in vec4 vertPositionAfterOffset;
     in vec4 clipSpacePreOffset;
     in vec4 color;
     in vec2 dudvTextureCoordinates;
@@ -70,24 +71,26 @@ const WaterShader = {
     const float shininessDampening = 7.0;
     
     out vec4 outputColor;
-    
+    const bool distortionEnabled = false;
     void main()
     {
         vec3 viewVector = normalize(toCameraVector);
     
-        vec3 U = dFdx(vertexViewSpace.xyz);
-        vec3 V = dFdy(vertexViewSpace.xyz);
+        vec3 U = dFdx(vertPositionAfterOffset.xyz);
+        vec3 V = dFdy(vertPositionAfterOffset.xyz);
         vec3 normal = normalize(cross(U,V));
         
         //diffuse
         highp float directional = max(dot(normal.xyz, -directionalLightVector), 0.0);
         vec3 diffuse = (directionalLightColor * directional);
         
-        
-        // vec2 distortion = (texture(dudvMap, vec2(dudvTextureCoordinates.x + distortionMoveFactor, dudvTextureCoordinates.y)).rg * 2.0 - 1.0) * distortionStrength; //converts [0,1] to [-1, 1];
+        vec2 distortion = vec2(0.0, 0.0);
+        if(distortionEnabled) {
+            distortion = (texture(dudvMap, vec2(dudvTextureCoordinates.x + distortionMoveFactor, dudvTextureCoordinates.y)).rg * 2.0 - 1.0) * distortionStrength; //converts [0,1] to [-1, 1];
+        }
         vec2 normalisedDeviceCoordinates = (clipSpacePreOffset.xy/clipSpacePreOffset.w)/2.0 + 0.5; ///2 + 0.5 to convert from [0, 1] to [-1, 1]
-        vec4 refractionTexel = texture(refractionTexture, normalisedDeviceCoordinates); // + distortion
-        vec4 reflectionTexel = texture(reflectionTexture, vec2(normalisedDeviceCoordinates.x, 1.0-normalisedDeviceCoordinates.y)); // + distortion
+        vec4 refractionTexel = texture(refractionTexture, normalisedDeviceCoordinates+ distortion); // + distortion
+        vec4 reflectionTexel = texture(reflectionTexture, vec2(normalisedDeviceCoordinates.x, 1.0-normalisedDeviceCoordinates.y)+ distortion); // + distortion
         
         //fresnel effect    
         //fresnel = [-1, 1] => [view from side, view from top]

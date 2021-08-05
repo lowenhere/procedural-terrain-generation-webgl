@@ -24,7 +24,7 @@ export const Terrain = {
      * @param {*} program 
      * @param {WebGL2RenderingContext} gl 
      */
-    init(program, gl) {
+    init(program, gl, size=30) {
         this.gl = gl;
         this.program = program;
         
@@ -49,7 +49,7 @@ export const Terrain = {
             }
         }
 
-        let [ vertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(30, yFunc, colorFunc, 0.6);
+        let [ vertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, yFunc, colorFunc, 0.6);
         this.mesh.vertices = vertices;
         this.mesh.indices = indices;
 
