@@ -10,7 +10,7 @@ class OBJMesh {
      * @param {String} mtlString raw .mtl file string
      * @param {Array<Number>} defaultColor default color value for vertices
      */
-    constructor(program, gl, objString, mtlString=undefined, defaultColor=[0.8, 0.0, 0.0, 1.0]) {
+    constructor(program, gl, objString, mtlString = undefined, defaultColor = [0.8, 0.0, 0.0, 1.0]) {
         this.program = program;
         this.gl = gl;
         this.defaultColor = defaultColor;
@@ -20,7 +20,7 @@ class OBJMesh {
         this.materials = {};
 
         // load mtl string if it exists
-        if (mtlString){
+        if (mtlString) {
             const materialList = loadMtlString(mtlString);
             materialList.forEach(m => { this.materials[m.name] = m });
         }
@@ -31,7 +31,7 @@ class OBJMesh {
         // set up color buffer data
         const colors = [];
         this.object.vertexMaterials.forEach(matName => {
-            if ( !this.materials[matName] ){
+            if (!this.materials[matName]) {
                 colors.push(...defaultColor);
                 return
             }
@@ -51,6 +51,13 @@ class OBJMesh {
         const vertices = this.object.vertices.flat(); // this.object.vertices is 2D, so we flatten it
         gl.bindBuffer(gl.ARRAY_BUFFER, posVbo);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+        // normal buffer
+        const normVbo = gl.createBuffer();
+        const normals = this.object.vertexNormals.flat();
+        console.log(this.object.vertexNormals);
+        gl.bindBuffer(gl.ARRAY_BUFFER, normVbo);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
 
         // color buffer
         const colorVbo = gl.createBuffer();
@@ -77,6 +84,19 @@ class OBJMesh {
             0 // offset
         );
         gl.enableVertexAttribArray(positionAttribLocation);
+
+        // define vertex attrib data for normals
+        gl.bindBuffer(gl.ARRAY_BUFFER, normVbo);
+        const normAttribLocation = gl.getAttribLocation(program, 'vertNormal');
+        gl.vertexAttribPointer(
+            normAttribLocation, // attribute location
+            3, // elements per attribute
+            gl.FLOAT, // element type
+            gl.FALSE, // to normalize
+            3 * Float32Array.BYTES_PER_ELEMENT, // stride
+            0 // offset
+        );
+        gl.enableVertexAttribArray(normAttribLocation);
 
         // define vertex attrib data for colors
         gl.bindBuffer(gl.ARRAY_BUFFER, colorVbo);
