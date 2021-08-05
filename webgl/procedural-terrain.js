@@ -1,10 +1,10 @@
 import { glMatrix, mat4, quat, vec3 } from 'gl-matrix';
-import Camera from '../src/camera';
-import DirLight from '../src/directional-light';
-import glUtils from '../src/gl-utils';
-import { flatFragmentShaderText, flatVertexShaderText, flatWaterFragmentShaderText, waterVertexShaderText } from '../src/shaders';
-import { Terrain } from '../src/terrain';
-import { Water } from '../src/water';
+import Camera from '../src/scene/camera';
+import DirLight from '../src/scene/directional-light';
+import { Terrain } from '../src/objects/terrain';
+import { Water } from '../src/objects/water';
+import FlatShader from '../src/shaders/flat-shader';
+import WaterShader from '../src/shaders/water-shader';
 
 /**
  * 
@@ -19,10 +19,7 @@ export function Initialise(gl, canvas) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
-    gl.clearColor(0.75, 0.85, 0.8, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
     gl.frontFace(gl.CCW);//counter clockwise determines which side the face is facing
@@ -33,16 +30,10 @@ export function Initialise(gl, canvas) {
     //                            INIT SHADERS/PROGRAM
     //
     //========================================================================
-    let flatVertexShader = glUtils.createShader(flatVertexShaderText, gl.VERTEX_SHADER, gl);
-    let waterVertexShader = glUtils.createShader(waterVertexShaderText, gl.VERTEX_SHADER, gl);
-    let fragmentShader = glUtils.createShader(flatFragmentShaderText, gl.FRAGMENT_SHADER, gl);
-    let waterFragmentShader = glUtils.createShader(flatWaterFragmentShaderText, gl.FRAGMENT_SHADER, gl);
-
-    //PROGRAM: create -> attach -> link -> validate
-    let flatMaterialProgram = glUtils.createProgramWithShaders([flatVertexShader, fragmentShader], gl);
-    let waterMaterialProgram = glUtils.createProgramWithShaders([waterVertexShader, waterFragmentShader], gl);
-    DirLight.initForProgram(flatMaterialProgram, gl);
-    DirLight.initForProgram(waterMaterialProgram, gl);
+    FlatShader.init(gl);
+    WaterShader.init(gl);
+    DirLight.initForProgram(FlatShader.program, gl);
+    DirLight.initForProgram(WaterShader.program, gl);
 
     //========================================================================
     //
@@ -62,9 +53,9 @@ export function Initialise(gl, canvas) {
     //                            INIT OBJECTS        
     //
     //========================================================================
-    Terrain.init(flatMaterialProgram, gl);
+    Terrain.init(FlatShader.program, gl);
     let waterHeight = -0.1;
-    Water.init(waterMaterialProgram, gl, waterHeight);
+    Water.init(WaterShader.program, gl, waterHeight);
 
 
     //========================================================================
@@ -89,7 +80,7 @@ export function Initialise(gl, canvas) {
     }
 
     let movementBindings = {
-        ' ': vec3.fromValues(0,1,0),
+        'q': vec3.fromValues(0,1,0),
         'e': vec3.fromValues(0,-1,0),
         'w': vec3.fromValues(0,0,1),
         's': vec3.fromValues(0,0,-1),
@@ -215,7 +206,7 @@ export function Initialise(gl, canvas) {
                 let moveVector = vec3.create();
                 
                 //world space
-                if(key == ' ' || key == 'e') {
+                if(key == 'q' || key == 'e') {
                     moveVector = movementBindings[key];
                 }
                 else {
@@ -223,7 +214,7 @@ export function Initialise(gl, canvas) {
                     vec3.transformQuat(moveVector, movementBindings[key], Camera.transform.quatRotation);
                 }
                 
-                let speedModifier = (inputKeys['Shift'] ? 3 : 1);
+                let speedModifier = (inputKeys[' '] ? 3 : 1);
                 vec3.normalize(moveVector, moveVector);
                 vec3.scale(moveVector, moveVector, Camera.moveSpeed * deltaTime * speedModifier);
                 vec3.add(Camera.transform.position, Camera.transform.position, moveVector);
@@ -260,7 +251,7 @@ export function Initialise(gl, canvas) {
         //
         //========================================================================
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        Terrain.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj, true);
+        Terrain.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj);
         Water.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj, time, refractionTexture, reflectionTexture, Camera.transform.position);
         requestAnimationFrame(loop);
     }

@@ -4,7 +4,7 @@ const DirLight = {
     /** @type {WebGL2RenderingContext} */
     gl: undefined,
     direction: vec3.fromValues(0.4, -0.8, 0.4),
-    color: vec3.fromValues(1.0,1.0,1.0),
+    color: vec3.fromValues(0.85,0.85,0.85),
     locations: {
         uniform: {
             directionalLightVector: undefined,

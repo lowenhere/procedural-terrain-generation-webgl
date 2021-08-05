@@ -1,4 +1,4 @@
-import MeshUtils from "./mesh";
+import MeshUtils from "../utils/mesh";
 
 export const Water = {
     /** @type {WebGL2RenderingContext} */

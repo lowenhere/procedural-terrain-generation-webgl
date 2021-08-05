@@ -12,6 +12,12 @@ function createShader(shaderText, shaderType, gl) {
     return newShader;
 }
 
+/**
+ * 
+ * @param {Array<any>} shaders 
+ * @param {WebGL2RenderingContext} gl 
+ * @returns {WebGLProgram}
+ */
 function createProgramWithShaders(shaders, gl) {
     let program = gl.createProgram();    
     for(let shader of shaders) {

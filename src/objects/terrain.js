@@ -1,5 +1,5 @@
-import MeshUtils from "./mesh";
-import { perlin2 } from "./perlin";
+import MeshUtils from "../utils/mesh";
+import { perlin2 } from "../utils/perlin";
 
 export const Terrain = {
     /** @type {WebGL2RenderingContext} */
