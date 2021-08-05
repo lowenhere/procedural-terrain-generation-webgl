@@ -3,6 +3,7 @@ export const basicVertexShaderText =
 precision highp float;
 
 in vec3 vertPosition;
+in vec4 vertColor;
 
 uniform mat4 mWorld;
 uniform mat4 mView;
@@ -12,7 +13,8 @@ out vec4 fragColor;
 out vec4 vertexViewSpace;
 
 void main(){
-    fragColor = vec4(0.8, 0.0, 0.0, 1.0);
+    // fragColor = vec4(0.8, 0.0, 0.0, 1.0);
+    fragColor = vertColor;
     vertexViewSpace = mView * mWorld * vec4(vertPosition, 1.0);
     gl_Position = mProj * vertexViewSpace;
 }
@@ -28,6 +30,6 @@ in vec4 fragColor;
 out vec4 outputColor;
 
 void main(){
-    outputColor = vec4(0.8, 0.0, 0.0, 1.0);
+    outputColor = fragColor;
 }
 `;

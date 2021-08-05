@@ -1,4 +1,5 @@
 import loadObjString from "./utils/obj-loader";
+import loadMtlString from "./utils/mtl-loader";
 
 class OBJMesh {
     /**
@@ -6,29 +7,57 @@ class OBJMesh {
      * @param {WebGLProgram} program 
      * @param {WebGL2RenderingContext} gl 
      * @param {String} objString raw .obj file string
+     * @param {String} mtlString raw .mtl file string
+     * @param {Array<Number>} defaultColor default color value for vertices
      */
-    constructor(program, gl, objString) {
+    constructor(program, gl, objString, mtlString=undefined, defaultColor=[0.8, 0.0, 0.0, 1.0]) {
         this.program = program;
         this.gl = gl;
+        this.defaultColor = defaultColor;
 
         // TODO: should probably find a better name for this ...
         this.object = loadObjString(objString);
+        this.materials = {};
 
-        console.log(
-            this.object.vertices.flat().filter(v => v >= 1)
-        )
+        // load mtl string if it exists
+        if (mtlString){
+            const materialList = loadMtlString(mtlString);
+            materialList.forEach(m => { this.materials[m.name] = m });
+        }
+
+        // console.log(this.object);
+        // console.log(this.materials);
+
+        // set up color buffer data
+        const colors = [];
+        this.object.vertexMaterials.forEach(matName => {
+            if ( !this.materials[matName] ){
+                colors.push(...defaultColor);
+                return
+            }
+
+            colors.push(...this.materials[matName]["Kd"]);
+        });
+
+        // console.log(colors);
 
         // create and bind vertex array object
         this.vao = gl.createVertexArray();
         gl.bindVertexArray(this.vao);
 
-        // create and bind vertex buffers 
-        const vbo = gl.createBuffer();
+        // create and bind vertex buffers
+        // position buffer
+        const posVbo = gl.createBuffer();
         const vertices = this.object.vertices.flat(); // this.object.vertices is 2D, so we flatten it
-        gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+        gl.bindBuffer(gl.ARRAY_BUFFER, posVbo);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
-        // create and bind index buffers 
+        // color buffer
+        const colorVbo = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, colorVbo);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+
+        // create and bind index buffers
         const ibo = gl.createBuffer();
         const faces = this.object.faces.flat(); // this.object.faces is 2D, so we flatten it
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
@@ -36,8 +65,9 @@ class OBJMesh {
 
         gl.useProgram(program);
 
+        // define vertex attrib data for positions
+        gl.bindBuffer(gl.ARRAY_BUFFER, posVbo);
         const positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
-
         gl.vertexAttribPointer(
             positionAttribLocation, // attribute location
             3, // elements per attribute
@@ -46,8 +76,20 @@ class OBJMesh {
             3 * Float32Array.BYTES_PER_ELEMENT, // stride
             0 // offset
         );
-
         gl.enableVertexAttribArray(positionAttribLocation);
+
+        // define vertex attrib data for colors
+        gl.bindBuffer(gl.ARRAY_BUFFER, colorVbo);
+        const colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
+        gl.vertexAttribPointer(
+            colorAttribLocation, // attribute location
+            3, // elements per attribute
+            gl.FLOAT, // element type
+            gl.FALSE, // to normalize
+            3 * Float32Array.BYTES_PER_ELEMENT, // stride
+            0 // offset
+        );
+        gl.enableVertexAttribArray(colorAttribLocation);
 
         this.locations = {
             uniform: {

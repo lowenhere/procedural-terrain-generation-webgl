@@ -4,7 +4,8 @@ import glUtils from "../src/gl-utils";
 import OBJMesh from "../src/obj-mesh";
 
 import { basicVertexShaderText, basicFragmentShaderText } from "../src/shaders/obj-mesh-shaders";
-import objString from "../assets/bunny.obj";
+import objString from "../assets/tree00.obj";
+import mtlString from "../assets/tree00.mtl";
 
 /**
  * Mesh Loading Scene
@@ -27,11 +28,12 @@ const meshLoading = (gl) => {
     // set up world, view, proj matrices
     const aspectRatio = 16 / 9;
     const [mWorld, mView, mProj] = glUtils.initWorldViewProjMatrices(aspectRatio);
+    mat4.lookAt(mView, [0, 0, -8], [0, 0, 0], [0, 1, 0]);
     const rotationMatrix = new Float32Array(16);
     mat4.identity(rotationMatrix);
 
     // load mesh
-    const mesh = new OBJMesh(program, gl, objString);
+    const mesh = new OBJMesh(program, gl, objString, mtlString);
 
     const loop = () => {
         // clear screen
@@ -39,7 +41,7 @@ const meshLoading = (gl) => {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         //rotate
-        const angle = performance.now() / 10000 / 6 * 2 * Math.PI;
+        const angle = performance.now() / 2000 / 6 * 2 * Math.PI;
         mat4.rotate(mWorld, rotationMatrix, angle, [0, 1, 0]); //rotate around y axis
 
         // render
