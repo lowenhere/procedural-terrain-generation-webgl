@@ -11,9 +11,9 @@ export default function Home() {
   useEffect(()=>{
     const gl = ref.current.getContext('webgl2');
     
-    // Initialise(gl, ref.current);
-    const loop = meshLoading(gl);
-    requestAnimationFrame(loop);
+    Initialise(gl, ref.current);
+    // const loop = meshLoading(gl);
+    // requestAnimationFrame(loop);
   })
 
   return (
