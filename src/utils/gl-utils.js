@@ -1,5 +1,12 @@
 import {glMatrix, mat4} from "gl-matrix";
 
+/**
+ * Creates a shader
+ * @param {String} shaderText 
+ * @param {(gl.VERTEX_SHADER|gl.FRAGMENT_SHADER)} shaderType 
+ * @param {WebGL2RenderingContext} gl 
+ * @returns {WebGLShader}
+ */
 function createShader(shaderText, shaderType, gl) {
     let newShader = gl.createShader(shaderType);
     gl.shaderSource(newShader, shaderText);
@@ -13,8 +20,13 @@ function createShader(shaderText, shaderType, gl) {
 }
 
 /**
+<<<<<<< HEAD:src/gl-utils.js
+ * Creates a program from a list of shaders
+ * @param {Array<WebGLShader>} shaders 
+=======
  * 
  * @param {Array<any>} shaders 
+>>>>>>> main:src/utils/gl-utils.js
  * @param {WebGL2RenderingContext} gl 
  * @returns {WebGLProgram}
  */
