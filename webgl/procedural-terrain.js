@@ -1,5 +1,6 @@
 import { glMatrix, mat4, quat, vec3 } from 'gl-matrix';
 import Camera from '../src/camera';
+import DirLight from '../src/directional-light';
 import glUtils from '../src/gl-utils';
 import { flatFragmentShaderText, flatVertexShaderText, flatWaterFragmentShaderText, waterVertexShaderText } from '../src/shaders';
 import { Terrain } from '../src/terrain';
@@ -40,7 +41,9 @@ export function Initialise(gl, canvas) {
     //PROGRAM: create -> attach -> link -> validate
     let flatMaterialProgram = glUtils.createProgramWithShaders([flatVertexShader, fragmentShader], gl);
     let waterMaterialProgram = glUtils.createProgramWithShaders([waterVertexShader, waterFragmentShader], gl);
-    
+    DirLight.initForProgram(flatMaterialProgram, gl);
+    DirLight.initForProgram(waterMaterialProgram, gl);
+
     //========================================================================
     //
     //                            INIT CAMERA
@@ -86,7 +89,7 @@ export function Initialise(gl, canvas) {
     }
 
     let movementBindings = {
-        'q': vec3.fromValues(0,1,0),
+        ' ': vec3.fromValues(0,1,0),
         'e': vec3.fromValues(0,-1,0),
         'w': vec3.fromValues(0,0,1),
         's': vec3.fromValues(0,0,-1),
@@ -212,7 +215,7 @@ export function Initialise(gl, canvas) {
                 let moveVector = vec3.create();
                 
                 //world space
-                if(key == 'q' || key == 'e') {
+                if(key == ' ' || key == 'e') {
                     moveVector = movementBindings[key];
                 }
                 else {
@@ -220,7 +223,7 @@ export function Initialise(gl, canvas) {
                     vec3.transformQuat(moveVector, movementBindings[key], Camera.transform.quatRotation);
                 }
                 
-                let speedModifier = (inputKeys[' '] ? 3 : 1);
+                let speedModifier = (inputKeys['Shift'] ? 3 : 1);
                 vec3.normalize(moveVector, moveVector);
                 vec3.scale(moveVector, moveVector, Camera.moveSpeed * deltaTime * speedModifier);
                 vec3.add(Camera.transform.position, Camera.transform.position, moveVector);
