@@ -1,6 +1,6 @@
 import { mat4 } from "gl-matrix";
 
-import glUtils from "../src/gl-utils";
+import glUtils from "../src/utils/gl-utils";
 import OBJMesh from "../src/obj-mesh";
 
 import { basicVertexShaderText, basicFragmentShaderText } from "../src/shaders/obj-mesh-shaders";
