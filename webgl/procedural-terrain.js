@@ -5,6 +5,9 @@ import Water from '../src/objects/water';
 import FlatShader from '../src/shaders/flat-shader';
 import WaterShader from '../src/shaders/water-shader';
 import Terrain from '../src/objects/terrain';
+import objString from "../assets/tree00.obj";
+import mtlString from "../assets/tree00.mtl";
+import OBJMesh from '../src/objects/obj-mesh';
 
 /**
  * 
@@ -51,6 +54,7 @@ export function Initialise(gl, canvas) {
     let terrain = new Terrain(FlatShader.program, gl, size);
     let waterHeight = -0.1;
     let water =new Water(WaterShader.program, gl, size, waterHeight);
+    let tree = new OBJMesh(FlatShader.program, gl, objString, mtlString);
 
 
     //========================================================================
@@ -136,6 +140,7 @@ export function Initialise(gl, canvas) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, refractionFrameBuffer);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         terrain.render(Camera);
+        tree.render(Camera);
         
         //========================================================================
         //
@@ -149,6 +154,7 @@ export function Initialise(gl, canvas) {
         Camera.transform.position[1] -= distance;
         Camera.transform.rotation[0] = -Camera.transform.rotation[0]; //invert pitch
         terrain.render(Camera, true);
+        tree.render(Camera, true);
         Camera.transform.position[1] += distance;
         Camera.transform.rotation[0] = -Camera.transform.rotation[0]; //invert pitch
 
@@ -160,11 +166,13 @@ export function Initialise(gl, canvas) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         terrain.render(Camera);
         water.render(Camera, time, refractionTexture, reflectionTexture);
+        tree.render(Camera);
         requestAnimationFrame(loop);
     }
 
     //start loop
-    requestAnimationFrame(loop);
+    // requestAnimationFrame(loop);
+    return loop;
 }
 
 

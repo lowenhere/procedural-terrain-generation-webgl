@@ -21,8 +21,8 @@ const Camera = {
         farClipPlane: 1000,
         aspectRatio: 1
     },
-    moveSpeed: 3,
     controls: {
+        moveSpeed: 3,
         deltaMouseX: 0,
         deltaMouseY: 0,
         inputKeys: {},
@@ -37,6 +37,7 @@ const Camera = {
         }
     },
     init(aspectRatio, canvas) {
+        this.canvas = canvas;
         //init camera properties
         this.properties.aspectRatio = aspectRatio;        
 
@@ -69,13 +70,13 @@ const Camera = {
         
             if(havePointerLock) {
                 if(this.mouseLocked) document.exitPointerLock();
-                else canvas.requestPointerLock();
+                else this.canvas.requestPointerLock();
                 this.controls.mouseLocked = !this.mouseLocked;
             }
         }
 
 
-    },
+    },    
     computeRotationQuaternion() {
         let cameraQuaternionRotation = quat.create();
         quat.fromEuler(cameraQuaternionRotation, this.transform.rotation[0], this.transform.rotation[1], this.transform.rotation[2]);
@@ -133,7 +134,7 @@ const Camera = {
                 
                 let speedModifier = (this.controls.inputKeys[' '] ? 3 : 1);
                 vec3.normalize(moveVector, moveVector);
-                vec3.scale(moveVector, moveVector, this.moveSpeed * deltaTime * speedModifier);
+                vec3.scale(moveVector, moveVector, this.controls.moveSpeed * deltaTime * speedModifier);
                 vec3.add(this.transform.position, this.transform.position, moveVector);
             }
         }

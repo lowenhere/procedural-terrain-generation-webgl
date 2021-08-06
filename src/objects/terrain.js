@@ -1,8 +1,9 @@
 import { mat4 } from "gl-matrix";
 import MeshUtils from "../utils/mesh";
 import { perlin2 } from "../utils/perlin";
+import Transform from "./transform";
 
-class Terrain {
+class Terrain extends Transform {
     /** @type {WebGL2RenderingContext} */
     gl = undefined
     /** @type {WebGLVertexArrayObject} */    
@@ -30,6 +31,7 @@ class Terrain {
      * @param {number} size 
      */
     constructor(program, gl, size=30) {
+        super();
         this.gl = gl;
         this.program = program;
         
@@ -103,10 +105,6 @@ class Terrain {
         this.locations.uniform.view = this.gl.getUniformLocation(this.program, 'mView');
         this.locations.uniform.proj = this.gl.getUniformLocation(this.program, 'mProj');
         this.locations.uniform.clipEnabled = this.gl.getUniformLocation(this.program, 'clipEnabled');
-    }
-
-    get modelMatrix(){ 
-        return mat4.identity(new Float32Array(16));
     }
 
     render(Camera, clipEnabled=false) {

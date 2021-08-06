@@ -6,7 +6,7 @@ in vec3 vertPosition;
 in vec3 vertNormal;
 in vec4 vertColor;
 
-uniform mat4 mWorld;
+uniform mat4 mModel;
 uniform mat4 mView;
 uniform mat4 mProj;
 
@@ -17,9 +17,9 @@ out vec4 vertexViewSpace;
 
 void main(){
     faceNormal = vertNormal;
-    fragPos = vec3(mWorld * vec4(vertPosition, 1.0));
+    fragPos = vec3(mModel * vec4(vertPosition, 1.0));
     fragColor = vertColor;
-    vertexViewSpace = mView * mWorld * vec4(vertPosition, 1.0);
+    vertexViewSpace = mView * mModel * vec4(vertPosition, 1.0);
 
     gl_Position = mProj * vertexViewSpace;
 }

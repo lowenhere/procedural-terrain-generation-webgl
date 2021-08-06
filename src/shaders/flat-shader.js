@@ -19,7 +19,6 @@ const FlatShader = {
     in vec3 vertColor;
     
     uniform bool clipEnabled;
-    uniform mat4 mNormal;
     uniform mat4 mModel;
     uniform mat4 mView;
     uniform mat4 mProj;
@@ -37,9 +36,8 @@ const FlatShader = {
         else {
             clip = 1.0;
         }
-        vec3 offset = vec3(0.0, 0.0, 0.0) * 0.2;
         fragColor = vec4(vertColor, 1.0);    
-        vertexWorldSpace = mModel * vec4(vertPosition + offset, 1.0);;
+        vertexWorldSpace = mModel * vec4(vertPosition, 1.0);;
         gl_Position = mProj * mView * vertexWorldSpace;
     }
     `,
@@ -72,7 +70,7 @@ const FlatShader = {
         vec3 vLighting = (directionalLightColor * directional);
     
         //ambient
-        vec3 ambient = directionalLightColor * 0.1;
+        vec3 ambient = fragColor.xyz * 0.2;
     
         outputColor = vec4(fragColor.xyz * vLighting + ambient, 1.0);
     }

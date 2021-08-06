@@ -1,7 +1,8 @@
 import { mat4 } from "gl-matrix";
 import MeshUtils from "../utils/mesh";
+import Transform from "./transform";
 
-export default class Water {
+export default class Water extends Transform{
 
     /** @type {WebGL2RenderingContext} */
     gl = undefined;
@@ -27,6 +28,7 @@ export default class Water {
     };
 
     constructor(program, gl, size=30, waterHeight=-0.1) {
+        super();
         this.gl = gl;
         this.program = program;
         this.vao = gl.createVertexArray();
@@ -144,10 +146,6 @@ export default class Water {
 
         image.src = url;
         return texture;
-    };
-
-    get modelMatrix(){ 
-        return mat4.identity(new Float32Array(16));
     };
 
     render(Camera, time, refractionTexture, reflectionTexture) {

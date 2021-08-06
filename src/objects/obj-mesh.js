@@ -1,7 +1,10 @@
-import loadObjString from "./utils/obj-loader";
-import loadMtlString from "./utils/mtl-loader";
+import loadObjString from "../utils/obj-loader";
+import loadMtlString from "../utils/mtl-loader";
+import Camera from "../scene/camera";
+import Transform from "./transform";
+import { mat4 } from "gl-matrix";
 
-class OBJMesh {
+class OBJMesh extends Transform{
     /**
      * OBJMesh constructor
      * @param {WebGLProgram} program 
@@ -11,6 +14,7 @@ class OBJMesh {
      * @param {Array<Number>} defaultColor default color value for vertices
      */
     constructor(program, gl, objString, mtlString = undefined, defaultColor = [0.8, 0.0, 0.0, 1.0]) {
+        super();
         this.program = program;
         this.gl = gl;
         this.defaultColor = defaultColor;
@@ -35,7 +39,7 @@ class OBJMesh {
                 colors.push(...defaultColor);
                 return
             }
-
+            
             colors.push(...this.materials[matName]["Kd"]);
         });
 
@@ -55,7 +59,6 @@ class OBJMesh {
         // normal buffer
         const normVbo = gl.createBuffer();
         const normals = this.object.vertexNormals.flat();
-        console.log(this.object.vertexNormals);
         gl.bindBuffer(gl.ARRAY_BUFFER, normVbo);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
 
@@ -86,17 +89,17 @@ class OBJMesh {
         gl.enableVertexAttribArray(positionAttribLocation);
 
         // define vertex attrib data for normals
-        gl.bindBuffer(gl.ARRAY_BUFFER, normVbo);
-        const normAttribLocation = gl.getAttribLocation(program, 'vertNormal');
-        gl.vertexAttribPointer(
-            normAttribLocation, // attribute location
-            3, // elements per attribute
-            gl.FLOAT, // element type
-            gl.FALSE, // to normalize
-            3 * Float32Array.BYTES_PER_ELEMENT, // stride
-            0 // offset
-        );
-        gl.enableVertexAttribArray(normAttribLocation);
+        // gl.bindBuffer(gl.ARRAY_BUFFER, normVbo);
+        // const normAttribLocation = gl.getAttribLocation(program, 'vertNormal');
+        // gl.vertexAttribPointer(
+        //     normAttribLocation, // attribute location
+        //     3, // elements per attribute
+        //     gl.FLOAT, // element type
+        //     gl.FALSE, // to normalize
+        //     3 * Float32Array.BYTES_PER_ELEMENT, // stride
+        //     0 // offset
+        // );
+        // gl.enableVertexAttribArray(normAttribLocation);
 
         // define vertex attrib data for colors
         gl.bindBuffer(gl.ARRAY_BUFFER, colorVbo);
@@ -113,7 +116,7 @@ class OBJMesh {
 
         this.locations = {
             uniform: {
-                world: gl.getUniformLocation(program, 'mWorld'),
+                model: gl.getUniformLocation(program, 'mModel'),
                 view: gl.getUniformLocation(program, 'mView'),
                 proj: gl.getUniformLocation(program, 'mProj'),
             }
@@ -121,19 +124,13 @@ class OBJMesh {
 
     }
 
-    /**
-     * Renders the mesh
-     * @param {mat4} mWorld
-     * @param {mat4} mView
-     * @param {mat4} mProj
-     */
-    render(mWorld, mView, mProj) {
+    render(camera) {
         const { gl, locations } = this;
 
         gl.useProgram(this.program);
-        gl.uniformMatrix4fv(locations.uniform.world, gl.FALSE, mWorld);
-        gl.uniformMatrix4fv(locations.uniform.view, gl.FALSE, mView);
-        gl.uniformMatrix4fv(locations.uniform.proj, gl.FALSE, mProj);
+        gl.uniformMatrix4fv(locations.uniform.model, gl.FALSE, this.modelMatrix);
+        gl.uniformMatrix4fv(locations.uniform.view, gl.FALSE, camera.matrices.view);
+        gl.uniformMatrix4fv(locations.uniform.proj, gl.FALSE, camera.matrices.proj);
         gl.bindVertexArray(this.vao);
         gl.drawElements(gl.TRIANGLES, 3 * this.object.faces.length, gl.UNSIGNED_SHORT, 0);
     }

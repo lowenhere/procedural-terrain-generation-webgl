@@ -19,7 +19,6 @@ const WaterShader = {
     in vec3 vertColor;
     uniform float time;
     
-    uniform mat4 mNormal;
     uniform mat4 mModel;
     uniform mat4 mView;
     uniform mat4 mProj;
