@@ -22,7 +22,7 @@ const Camera = {
         aspectRatio: 1
     },
     controls: {
-        moveSpeed: 3,
+        moveSpeed: 6,
         deltaMouseX: 0,
         deltaMouseY: 0,
         inputKeys: {},

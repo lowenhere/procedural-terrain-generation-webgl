@@ -1,4 +1,4 @@
-function GenerateSquarePlaneTriangleMesh(width=10, yFunc=(x,z)=>0, colorFunc=(y)=>[Math.random(), Math.random(), Math.random()], vertexStepDistance=0.1) {
+function GenerateSquarePlaneTriangleMesh(width=10, yFunc=(x,z)=>0, colorFunc=(y)=>[Math.random(), Math.random(), Math.random()], vertexStepDistance=1) {
     let vertices = []; 
     let indices = [];
     let height = width;

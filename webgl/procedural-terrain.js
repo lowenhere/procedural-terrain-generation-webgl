@@ -8,6 +8,7 @@ import Terrain from '../src/objects/terrain';
 import objString from "../assets/tree00.obj";
 import mtlString from "../assets/tree00.mtl";
 import OBJMesh from '../src/objects/obj-mesh';
+import { perlin2 } from '../src/utils/perlin';
 
 /**
  * 
@@ -50,11 +51,51 @@ export function Initialise(gl, canvas) {
     //                            INIT OBJECTS        
     //
     //========================================================================
+    //terrain types = 'WATER', 'SAND', 'GRASS', 'MOUNTAIN', 
+    let terrainConfig = {
+        WATER: -0.3,
+        SAND: -0.1,
+        GRASS: 0.2,
+        MOUNTAIN: 1
+    }
+    
+    //returns [-1,1];
+    let normalisedHeightToTerrainType = (height)=>{
+        for(let terrainType in terrainConfig) {
+            let upperBound = terrainConfig[terrainType];
+            if(height <= upperBound) {
+                return terrainType;
+            }
+        }
+        return Object.keys(terrainConfig)[0];
+    }
+
+
+    let perlinScale=4;
+    let terrainYFunction = (x,z)=>perlin2(x/perlinScale, z/perlinScale);
     let size = 60;
-    let terrain = new Terrain(FlatShader.program, gl, size);
-    let waterHeight = -0.1;
-    let water =new Water(WaterShader.program, gl, size, waterHeight);
-    let tree = new OBJMesh(FlatShader.program, gl, objString, mtlString);
+    let terrain = new Terrain(FlatShader.program, terrainYFunction, normalisedHeightToTerrainType, gl, {scale: vec3.fromValues(1,1.8,1)}, size);
+    let water = new Water(WaterShader.program, gl, size, terrainConfig['WATER']);
+
+    let sceneObjects = [];
+    
+    //tree generator
+    let treeScale = vec3.fromValues(0.5, 0.5, 0.5);
+    let treeSpawnProbability = 0.05;
+    for(let x=0; x<size; x++) {
+        for(let z=0; z<size; z++) {
+            let sampleHeight = terrainYFunction(x, z);
+            let terrainType = normalisedHeightToTerrainType(sampleHeight);
+            if(terrainType == 'GRASS') {
+                if(Math.random() < treeSpawnProbability) {
+                    let scale = vec3.create();
+                    vec3.scale(scale, treeScale, Math.max(Math.random(), 0.9));
+                    let tree = new OBJMesh(FlatShader.program, gl, objString, mtlString, {position: vec3.fromValues(x-size/2, sampleHeight*1.8, z-size/2), scale});
+                    sceneObjects.push(tree);
+                }
+            }
+        }
+    }
 
 
     //========================================================================
@@ -140,7 +181,10 @@ export function Initialise(gl, canvas) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, refractionFrameBuffer);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         terrain.render(Camera);
-        tree.render(Camera);
+        
+        for(let object of sceneObjects) {
+            object.render(Camera);
+        }
         
         //========================================================================
         //
@@ -150,11 +194,13 @@ export function Initialise(gl, canvas) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, reflectionFrameBuffer);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         //assuming water is at pos y = 0, then camera to water distance is y pos of camera
-        let distance = (Camera.transform.position[1] - waterHeight) * 2;
+        let distance = (Camera.transform.position[1] - terrainConfig['WATER']) * 2;
         Camera.transform.position[1] -= distance;
         Camera.transform.rotation[0] = -Camera.transform.rotation[0]; //invert pitch
         terrain.render(Camera, true);
-        tree.render(Camera, true);
+        for(let object of sceneObjects) {
+            object.render(Camera, true);
+        }
         Camera.transform.position[1] += distance;
         Camera.transform.rotation[0] = -Camera.transform.rotation[0]; //invert pitch
 
@@ -166,7 +212,9 @@ export function Initialise(gl, canvas) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         terrain.render(Camera);
         water.render(Camera, time, refractionTexture, reflectionTexture);
-        tree.render(Camera);
+        for(let object of sceneObjects) {
+            object.render(Camera);
+        }
         requestAnimationFrame(loop);
     }
 

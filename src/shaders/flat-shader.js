@@ -26,7 +26,7 @@ const FlatShader = {
     out vec4 fragColor;
     out vec4 vertexWorldSpace;
     out float clip;
-    const vec4 clippingPlane = vec4(0, 1, 0, 0.15);
+    const vec4 clippingPlane = vec4(0, 1, 0, 0.55);
     
     void main()
     {   

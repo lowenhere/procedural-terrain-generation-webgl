@@ -50,7 +50,7 @@ export default class Water extends Transform{
         let yFunc = (x,z)=>waterHeight;
         let colorFunc = (y)=>[52/255,235/255,229/255]
 
-        let [ vertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, yFunc, colorFunc, 0.6);
+        let [ vertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, yFunc, colorFunc);
         this.mesh.vertices = vertices;
         this.mesh.indices = indices;
 

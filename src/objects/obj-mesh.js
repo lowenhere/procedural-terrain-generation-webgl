@@ -4,7 +4,7 @@ import Camera from "../scene/camera";
 import Transform from "./transform";
 import { mat4 } from "gl-matrix";
 
-class OBJMesh extends Transform{
+class OBJMesh extends Transform {
     /**
      * OBJMesh constructor
      * @param {WebGLProgram} program 
@@ -13,8 +13,8 @@ class OBJMesh extends Transform{
      * @param {String} mtlString raw .mtl file string
      * @param {Array<Number>} defaultColor default color value for vertices
      */
-    constructor(program, gl, objString, mtlString = undefined, defaultColor = [0.8, 0.0, 0.0, 1.0]) {
-        super();
+    constructor(program, gl, objString, mtlString = undefined, transform={}, defaultColor = [0.8, 0.0, 0.0, 1.0]) {
+        super(transform.position, transform.rotation, transform.scale);
         this.program = program;
         this.gl = gl;
         this.defaultColor = defaultColor;

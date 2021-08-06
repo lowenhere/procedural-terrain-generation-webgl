@@ -30,8 +30,8 @@ class Terrain extends Transform {
      * @param {WebGL2RenderingContext} gl 
      * @param {number} size 
      */
-    constructor(program, gl, size=30) {
-        super();
+    constructor(program, yFunc, heightToTerrainType, gl, transform={}, size=30) {
+        super(transform.position, transform.rotation, transform.scale);
         this.gl = gl;
         this.program = program;
         
@@ -42,21 +42,31 @@ class Terrain extends Transform {
         //
         //                            MESH GENERATION                             
         //
-        //========================================================================
-        let perlinScale=4;
-        let heightScale=1.8;
-        let yFunc = (x,z)=>perlin2(x/perlinScale, z/perlinScale) * heightScale;
+        //========================================================================        
         let colorFunc = (y)=>{
-            if(y <= 0.0) {
-                return [0.8, 0.8, 0.3];
-            }
-            else
-            {
-                return [0.2, 0.9, 0.2];
+            let terrainType = heightToTerrainType(y);
+            switch (terrainType) {
+                case 'WATER':
+                    return [0.8, 0.8, 0.3];
+                    break;
+                case 'SAND':
+                    return [0.8, 0.8, 0.3];
+                    break;
+                case 'GRASS':
+                    return [0.2, 0.9, 0.2];
+                    break;
+                case 'MOUNTAIN':
+                    return [0.7, 0.7, 0.5];
+                    break;
+                    
+                default:
+                    console.warn('invalid terrain type:', terrainType);
+                    return [0.2, 0.2, 0.2];
+                    break;
             }
         }
 
-        let [ vertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, yFunc, colorFunc, 0.6);
+        let [ vertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, yFunc, colorFunc);
         this.mesh.vertices = vertices;
         this.mesh.indices = indices;
 
