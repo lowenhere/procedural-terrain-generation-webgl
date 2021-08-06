@@ -30,12 +30,12 @@ function createProgramWithShaders(shaders, gl) {
     return program
 }
 
-function initWorldViewProjMatrices(aspectRatio) {
-    let worldMatrix = new Float32Array(16);
+function initModelViewProjMatrices(aspectRatio) {
+    let modelMatrix = new Float32Array(16);
     let viewMatrix = new Float32Array(16);
     let projMatrix = new Float32Array(16);
 
-    mat4.identity(worldMatrix);
+    mat4.identity(modelMatrix);
     const cameraPos = [0, 5, 6];
     const lookAt = [0, 0, 0];
     const up = [0, 1, 0];
@@ -45,13 +45,13 @@ function initWorldViewProjMatrices(aspectRatio) {
     const farClipPlane = 1000;
     mat4.perspective(projMatrix, fieldOfView, aspectRatio, nearClipPlane, farClipPlane);
 
-    return [worldMatrix, viewMatrix, projMatrix];
+    return [modelMatrix, viewMatrix, projMatrix];
 }
 
 const glUtils = {
     createProgramWithShaders,
     createShader,
-    initWorldViewProjMatrices
+    initModelViewProjMatrices
 }
 
 export default glUtils;

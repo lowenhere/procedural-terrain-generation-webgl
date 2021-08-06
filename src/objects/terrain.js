@@ -1,3 +1,4 @@
+import { mat4 } from "gl-matrix";
 import MeshUtils from "../utils/mesh";
 import { perlin2 } from "../utils/perlin";
 
@@ -13,7 +14,7 @@ export const Terrain = {
     },
     locations: {
         uniform: {
-            world: undefined,
+            model: undefined,
             view: undefined,
             proj: undefined,
             clipEnabled: undefined,
@@ -94,17 +95,20 @@ export const Terrain = {
         gl.enableVertexAttribArray(positionAttribLocation);
         gl.enableVertexAttribArray(colorAttribLocation);
         
-        this.locations.uniform.world = this.gl.getUniformLocation(this.program, 'mWorld');
+        this.locations.uniform.model = this.gl.getUniformLocation(this.program, 'mModel');
         this.locations.uniform.view = this.gl.getUniformLocation(this.program, 'mView');
         this.locations.uniform.proj = this.gl.getUniformLocation(this.program, 'mProj');
         this.locations.uniform.clipEnabled = this.gl.getUniformLocation(this.program, 'clipEnabled');
     },    
-    render(worldMatrix, viewMatrix, projMatrix, clipEnabled=false) {
+    get modelMatrix(){ 
+        return mat4.identity(new Float32Array(16));
+    },
+    render(Camera, clipEnabled=false) {
         this.gl.useProgram(this.program);
         this.gl.uniform1i(this.locations.uniform.clipEnabled, clipEnabled);
-        this.gl.uniformMatrix4fv(this.locations.uniform.world, this.gl.FALSE, worldMatrix);
-        this.gl.uniformMatrix4fv(this.locations.uniform.view, this.gl.FALSE, viewMatrix);
-        this.gl.uniformMatrix4fv(this.locations.uniform.proj, this.gl.FALSE, projMatrix);
+        this.gl.uniformMatrix4fv(this.locations.uniform.model, this.gl.FALSE, this.modelMatrix);
+        this.gl.uniformMatrix4fv(this.locations.uniform.view, this.gl.FALSE, Camera.matrices.view);
+        this.gl.uniformMatrix4fv(this.locations.uniform.proj, this.gl.FALSE, Camera.matrices.proj);
         this.gl.bindVertexArray(this.vao);
         this.gl.drawElements(this.gl.TRIANGLES, this.mesh.indices.length, this.gl.UNSIGNED_SHORT, 0);
     }

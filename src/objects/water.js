@@ -1,3 +1,4 @@
+import { mat4 } from "gl-matrix";
 import MeshUtils from "../utils/mesh";
 
 export const Water = {
@@ -12,7 +13,7 @@ export const Water = {
     },
     locations: {
         uniform: {
-            world: undefined,
+            model: undefined,
             view: undefined,
             proj: undefined,
             time: undefined,
@@ -99,7 +100,7 @@ export const Water = {
         gl.enableVertexAttribArray(positionAttribLocation);
         gl.enableVertexAttribArray(colorAttribLocation);                
       
-        this.locations.uniform.world = this.gl.getUniformLocation(this.program, 'mWorld');
+        this.locations.uniform.model = this.gl.getUniformLocation(this.program, 'mModel');
         this.locations.uniform.view = this.gl.getUniformLocation(this.program, 'mView');
         this.locations.uniform.proj = this.gl.getUniformLocation(this.program, 'mProj');
         this.locations.uniform.cameraPosition = this.gl.getUniformLocation(this.program, 'cameraPosition');
@@ -145,14 +146,17 @@ export const Water = {
         image.src = url;
         return texture;
     },
-    render(worldMatrix, viewMatrix, projMatrix, time, refractionTexture, reflectionTexture, cameraPosition) {
+    get modelMatrix(){ 
+        return mat4.identity(new Float32Array(16));
+    },
+    render(Camera, time, refractionTexture, reflectionTexture) {
         this.gl.useProgram(this.program);
         this.gl.uniform1f(this.locations.uniform.time, time/1000);
         this.gl.uniform1f(this.locations.uniform.distortionMoveFactor, (time/1000 * 0.05) % 1);
-        this.gl.uniform3fv(this.locations.uniform.cameraPosition, cameraPosition);
-        this.gl.uniformMatrix4fv(this.locations.uniform.world, this.gl.FALSE, worldMatrix);
-        this.gl.uniformMatrix4fv(this.locations.uniform.view, this.gl.FALSE, viewMatrix);
-        this.gl.uniformMatrix4fv(this.locations.uniform.proj, this.gl.FALSE, projMatrix);
+        this.gl.uniform3fv(this.locations.uniform.cameraPosition, Camera.transform.position);
+        this.gl.uniformMatrix4fv(this.locations.uniform.model, this.gl.FALSE, this.modelMatrix);
+        this.gl.uniformMatrix4fv(this.locations.uniform.view, this.gl.FALSE, Camera.matrices.view);
+        this.gl.uniformMatrix4fv(this.locations.uniform.proj, this.gl.FALSE, Camera.matrices.proj);
 
         //refraction
         this.gl.activeTexture(this.gl.TEXTURE0);

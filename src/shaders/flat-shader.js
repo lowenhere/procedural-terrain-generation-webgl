@@ -20,27 +20,27 @@ const FlatShader = {
     
     uniform bool clipEnabled;
     uniform mat4 mNormal;
-    uniform mat4 mWorld;
+    uniform mat4 mModel;
     uniform mat4 mView;
     uniform mat4 mProj;
     
     out vec4 fragColor;
-    out vec4 vertexViewSpace;
+    out vec4 vertexWorldSpace;
     out float clip;
     const vec4 clippingPlane = vec4(0, 1, 0, 0.15);
     
     void main()
     {   
         if(clipEnabled == true) {
-            clip = dot(mWorld * vec4(vertPosition, 1.0), clippingPlane);
+            clip = dot(mModel * vec4(vertPosition, 1.0), clippingPlane);
         }
         else {
             clip = 1.0;
         }
         vec3 offset = vec3(0.0, 0.0, 0.0) * 0.2;
         fragColor = vec4(vertColor, 1.0);    
-        vertexViewSpace = mWorld * vec4(vertPosition + offset, 1.0);;
-        gl_Position = mProj * mView * vertexViewSpace;
+        vertexWorldSpace = mModel * vec4(vertPosition + offset, 1.0);;
+        gl_Position = mProj * mView * vertexWorldSpace;
     }
     `,
     fragmentShaderText: `#version 300 es
@@ -48,7 +48,7 @@ const FlatShader = {
     precision mediump float;
     
     in float clip;
-    in vec4 vertexViewSpace;
+    in vec4 vertexWorldSpace;
     in vec4 fragColor;
     
     uniform vec3 directionalLightColor;
@@ -63,8 +63,8 @@ const FlatShader = {
             discard;
         }
     
-        vec3 U = dFdx(vertexViewSpace.xyz);
-        vec3 V = dFdy(vertexViewSpace.xyz);
+        vec3 U = dFdx(vertexWorldSpace.xyz);
+        vec3 V = dFdy(vertexWorldSpace.xyz);
         vec3 normal = normalize(cross(U,V));
     
         //diffuse

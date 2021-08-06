@@ -20,7 +20,7 @@ const WaterShader = {
     uniform float time;
     
     uniform mat4 mNormal;
-    uniform mat4 mWorld;
+    uniform mat4 mModel;
     uniform mat4 mView;
     uniform mat4 mProj;
     uniform vec3 cameraPosition;
@@ -36,7 +36,7 @@ const WaterShader = {
     
     void main()
     {
-        mat4 _m = mProj * mView * mWorld;
+        mat4 _m = mProj * mView * mModel;
         float timePositionValue = (time + vertPosition[0]*scale + vertPosition[2]*scale);
         vec3 offset = vec3(0.0, sin(time + vertPosition[0]*scale) + cos(time + vertPosition[2]*scale), 0.0) * 0.05;
         color = vec4(vertColor, 1.0);        
@@ -71,7 +71,7 @@ const WaterShader = {
     const float shininessDampening = 7.0;
     
     out vec4 outputColor;
-    const bool distortionEnabled = false;
+    const bool distortionEnabled = true;
     void main()
     {
         vec3 viewVector = normalize(toCameraVector);

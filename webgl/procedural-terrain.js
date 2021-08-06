@@ -40,19 +40,14 @@ export function Initialise(gl, canvas) {
     //
     //========================================================================
     const aspectRatio = canvas.width / canvas.height;
-    Camera.init(aspectRatio);
-
-    // let [worldMatrix, viewMatrix, projMatrix] = glUtils.initWorldViewProjMatrices(aspectRatio);
-    let angle = 0;
-    let rotationMatrix = new Float32Array(16);
-    mat4.identity(rotationMatrix);
+    Camera.init(aspectRatio, canvas);
     
     //========================================================================
     //
     //                            INIT OBJECTS        
     //
     //========================================================================
-    let size = 30;
+    let size = 60;
     Terrain.init(FlatShader.program, gl, size);
     let waterHeight = -0.1;
     Water.init(WaterShader.program, gl, size, waterHeight);
@@ -60,54 +55,9 @@ export function Initialise(gl, canvas) {
 
     //========================================================================
     //
-    //                            INIT CONTROLS                             
-    //
-    //========================================================================
-    let deltaMouseX = 0;
-    let deltaMouseY = 0;
-    document.onmousemove = function(event) {
-        deltaMouseX += event.movementX;
-        deltaMouseY += event.movementY;
-    }
-
-    let inputKeys = {}
-    document.onkeydown = function(event) {
-        inputKeys[event.key] = true;
-    }
-    
-    document.onkeyup = function(event) {
-        inputKeys[event.key] = false;
-    }
-
-    let movementBindings = {
-        'q': vec3.fromValues(0,1,0),
-        'e': vec3.fromValues(0,-1,0),
-        'w': vec3.fromValues(0,0,1),
-        's': vec3.fromValues(0,0,-1),
-        'a': vec3.fromValues(1,0,0),
-        'd': vec3.fromValues(-1,0,0),
-    }
-
-    let locked = false;
-    document.onmousedown = function(event) {
-        let havePointerLock = 'pointerLockElement' in document ||
-        'mozPointerLockElement' in document ||
-        'webkitPointerLockElement' in document;
-    
-        if(havePointerLock) {
-            if(locked) document.exitPointerLock();
-            else canvas.requestPointerLock();
-            locked = !locked;
-        }
-    }
-
-
-    //========================================================================
-    //
     //                       RENDER REFRACTION TEXTURE                             
     //
     //========================================================================
-
     let refractionFrameBuffer = gl.createFramebuffer();    
     gl.bindFramebuffer(gl.FRAMEBUFFER, refractionFrameBuffer);
     
@@ -176,50 +126,7 @@ export function Initialise(gl, canvas) {
         let deltaTime = (time - lastTime)/1000;
         lastTime = time;
 
-        //========================================================================
-        //
-        //                            ROTATE CAMERA                             
-        //
-        //========================================================================
-        // if(lastMouseX != 0 && lastMouseY != 0) {
-        //     deltaMouseX = (mouseX - lastMouseX);
-        //     deltaMouseY = (mouseY - lastMouseY);
-        // }
-
-        // lastMouseX = mouseX;
-        // lastMouseY = mouseY;
-        let deltaAngleHor = deltaMouseX * Math.PI/10;
-        let deltaAngleVert = deltaMouseY * Math.PI/10;
-        deltaMouseX = 0;
-        deltaMouseY = 0;
-        
-        Camera.transform.rotation[1] -= deltaAngleHor;
-        Camera.transform.rotation[0] = Math.min(89, Math.max(deltaAngleVert + Camera.transform.rotation[0], -89));
-
-        //========================================================================
-        //
-        //                            MOVE CAMERA                             
-        //
-        //========================================================================
-        for(let key in movementBindings) {
-            if(inputKeys[key]) {
-                let moveVector = vec3.create();
-                
-                //world space
-                if(key == 'q' || key == 'e') {
-                    moveVector = movementBindings[key];
-                }
-                else {
-                    //move inlocal space
-                    vec3.transformQuat(moveVector, movementBindings[key], Camera.transform.quatRotation);
-                }
-                
-                let speedModifier = (inputKeys[' '] ? 3 : 1);
-                vec3.normalize(moveVector, moveVector);
-                vec3.scale(moveVector, moveVector, Camera.moveSpeed * deltaTime * speedModifier);
-                vec3.add(Camera.transform.position, Camera.transform.position, moveVector);
-            }
-        }
+        Camera.update(deltaTime);
 
         //========================================================================
         //
@@ -228,7 +135,7 @@ export function Initialise(gl, canvas) {
         //========================================================================
         gl.bindFramebuffer(gl.FRAMEBUFFER, refractionFrameBuffer);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        Terrain.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj);
+        Terrain.render(Camera);
         
         //========================================================================
         //
@@ -241,7 +148,7 @@ export function Initialise(gl, canvas) {
         let distance = (Camera.transform.position[1] - waterHeight) * 2;
         Camera.transform.position[1] -= distance;
         Camera.transform.rotation[0] = -Camera.transform.rotation[0]; //invert pitch
-        Terrain.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj, true);
+        Terrain.render(Camera, true);
         Camera.transform.position[1] += distance;
         Camera.transform.rotation[0] = -Camera.transform.rotation[0]; //invert pitch
 
@@ -251,8 +158,8 @@ export function Initialise(gl, canvas) {
         //
         //========================================================================
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        Terrain.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj);
-        Water.render(Camera.matrices.world, Camera.matrices.view, Camera.matrices.proj, time, refractionTexture, reflectionTexture, Camera.transform.position);
+        Terrain.render(Camera);
+        Water.render(Camera, time, refractionTexture, reflectionTexture);
         requestAnimationFrame(loop);
     }
 
