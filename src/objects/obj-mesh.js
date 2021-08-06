@@ -5,6 +5,16 @@ import Transform from "./transform";
 import { mat4 } from "gl-matrix";
 
 class OBJMesh extends Transform {
+
+    locations = {
+        uniform: {
+            mModel: undefined,
+            mView: undefined,
+            mProj: undefined,
+            clipEnabled: undefined,
+        }
+    };
+    
     /**
      * OBJMesh constructor
      * @param {WebGLProgram} program 
@@ -114,23 +124,20 @@ class OBJMesh extends Transform {
         );
         gl.enableVertexAttribArray(colorAttribLocation);
 
-        this.locations = {
-            uniform: {
-                model: gl.getUniformLocation(program, 'mModel'),
-                view: gl.getUniformLocation(program, 'mView'),
-                proj: gl.getUniformLocation(program, 'mProj'),
-            }
-        };
-
+        //LINK ALL UNIFORM LOCATIONS
+        for(let key in this.locations.uniform) {
+            this.locations.uniform[key] = gl.getUniformLocation(program, key);
+        }
     }
 
-    render(camera) {
+    render(camera, clipEnabled=false) {
         const { gl, locations } = this;
 
         gl.useProgram(this.program);
-        gl.uniformMatrix4fv(locations.uniform.model, gl.FALSE, this.modelMatrix);
-        gl.uniformMatrix4fv(locations.uniform.view, gl.FALSE, camera.matrices.view);
-        gl.uniformMatrix4fv(locations.uniform.proj, gl.FALSE, camera.matrices.proj);
+        gl.uniform1i(this.locations.uniform.clipEnabled, clipEnabled);
+        gl.uniformMatrix4fv(locations.uniform.mModel, gl.FALSE, this.modelMatrix);
+        gl.uniformMatrix4fv(locations.uniform.mView, gl.FALSE, camera.matrices.view);
+        gl.uniformMatrix4fv(locations.uniform.mProj, gl.FALSE, camera.matrices.proj);
         gl.bindVertexArray(this.vao);
         gl.drawElements(gl.TRIANGLES, 3 * this.object.faces.length, gl.UNSIGNED_SHORT, 0);
     }

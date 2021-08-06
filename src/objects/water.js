@@ -16,16 +16,31 @@ export default class Water extends Transform{
 
     locations = {
         uniform: {
-            model: undefined,
-            view: undefined,
-            proj: undefined,
+            mModel: undefined,
+            mView: undefined,
+            mProj: undefined,
             time: undefined,
             distortionMoveFactor: undefined,
+            reflectionTexture: undefined,
             refractionTexture: undefined,
             dudvMap: undefined,
             cameraPosition: undefined,
         },
     };
+
+    uniformConfigurations = {
+        bool: {
+            distortionEnabled: true
+        },
+        float: {
+            distortionStrength: 0.01,
+            specularReflectivity: 0.8,
+            shininessDampening: 4.0,
+            maxVertexOscillation: 0.05,
+            dudvTiling: 0.2,
+            oscillationScale: 500.0,
+        }
+    }
 
     constructor(program, gl, size=30, waterHeight=-0.1) {
         super();
@@ -48,7 +63,7 @@ export default class Water extends Transform{
         //
         //========================================================================
         let yFunc = (x,z)=>waterHeight;
-        let colorFunc = (y)=>[52/255,235/255,229/255]
+        let colorFunc = (y)=>[52/255,235/255,229/255];
 
         let [ vertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, yFunc, colorFunc);
         this.mesh.vertices = vertices;
@@ -70,13 +85,35 @@ export default class Water extends Transform{
         //========================================================================
         gl.useProgram(program);
         let positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
-        let colorAttribLocation = gl.getAttribLocation(program, 'vertColor');        
-        this.locations.uniform.time = gl.getUniformLocation(program, 'time');        
-        this.locations.uniform.distortionMoveFactor = gl.getUniformLocation(program, 'distortionMoveFactor');        
-        this.locations.uniform.refractionTexture = gl.getUniformLocation(program, 'refractionTexture');
-        this.locations.uniform.reflectionTexture = gl.getUniformLocation(program, 'reflectionTexture');
-        this.locations.uniform.dudvMap = gl.getUniformLocation(program, 'dudvMap');
+        let colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
+
+        //========================================================================
+        //
+        //                            LOCATION AND CONFIGURATIONS                             
+        //
+        //========================================================================
         
+        //uniform locations
+        for(let key in this.locations.uniform) {
+            this.locations.uniform[key] = gl.getUniformLocation(program, key);
+        }
+        
+        //uniform flags
+        for(let key in this.uniformConfigurations.bool) {
+            this.locations.uniform[key] = gl.getUniformLocation(program, key);
+            this.gl.uniform1i(this.locations.uniform[key], this.uniformConfigurations.bool[key]);
+        }
+        
+        //uniform floats
+        for(let key in this.uniformConfigurations.float) {
+            this.locations.uniform[key] = gl.getUniformLocation(program, key);
+            this.gl.uniform1f(this.locations.uniform[key], this.uniformConfigurations.float[key]);
+        }
+
+        this.gl.uniform1i(this.locations.uniform.refractionTexture, 0);
+        this.gl.uniform1i(this.locations.uniform.reflectionTexture, 1);
+        this.gl.uniform1i(this.locations.uniform.dudvMap, 2);
+
         const valuesPerVertex = 6;
 
         gl.vertexAttribPointer(
@@ -98,12 +135,7 @@ export default class Water extends Transform{
         );
         
         gl.enableVertexAttribArray(positionAttribLocation);
-        gl.enableVertexAttribArray(colorAttribLocation);                
-      
-        this.locations.uniform.model = this.gl.getUniformLocation(this.program, 'mModel');
-        this.locations.uniform.view = this.gl.getUniformLocation(this.program, 'mView');
-        this.locations.uniform.proj = this.gl.getUniformLocation(this.program, 'mProj');
-        this.locations.uniform.cameraPosition = this.gl.getUniformLocation(this.program, 'cameraPosition');
+        gl.enableVertexAttribArray(colorAttribLocation);
     }
 
     loadTexture(url) {
@@ -153,24 +185,21 @@ export default class Water extends Transform{
         this.gl.uniform1f(this.locations.uniform.time, time/1000);
         this.gl.uniform1f(this.locations.uniform.distortionMoveFactor, (time/1000 * 0.05) % 1);
         this.gl.uniform3fv(this.locations.uniform.cameraPosition, Camera.transform.position);
-        this.gl.uniformMatrix4fv(this.locations.uniform.model, this.gl.FALSE, this.modelMatrix);
-        this.gl.uniformMatrix4fv(this.locations.uniform.view, this.gl.FALSE, Camera.matrices.view);
-        this.gl.uniformMatrix4fv(this.locations.uniform.proj, this.gl.FALSE, Camera.matrices.proj);
+        this.gl.uniformMatrix4fv(this.locations.uniform.mModel, this.gl.FALSE, this.modelMatrix);
+        this.gl.uniformMatrix4fv(this.locations.uniform.mView, this.gl.FALSE, Camera.matrices.view);
+        this.gl.uniformMatrix4fv(this.locations.uniform.mProj, this.gl.FALSE, Camera.matrices.proj);
 
         //refraction
         this.gl.activeTexture(this.gl.TEXTURE0);
         this.gl.bindTexture(this.gl.TEXTURE_2D, refractionTexture);
-        this.gl.uniform1i(this.locations.uniform.refractionTexture, 0);
         
         //reflection
         this.gl.activeTexture(this.gl.TEXTURE1);
         this.gl.bindTexture(this.gl.TEXTURE_2D, reflectionTexture);
-        this.gl.uniform1i(this.locations.uniform.reflectionTexture, 1);
         
         //dudv
         this.gl.activeTexture(this.gl.TEXTURE2);
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.dudvTexture);
-        this.gl.uniform1i(this.locations.uniform.dudvMap, 2);
 
         this.gl.bindVertexArray(this.vao);
         this.gl.drawElements(this.gl.TRIANGLES, this.mesh.indices.length, this.gl.UNSIGNED_SHORT, 0);

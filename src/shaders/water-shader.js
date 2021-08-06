@@ -17,12 +17,15 @@ const WaterShader = {
     
     in vec3 vertPosition;
     in vec3 vertColor;
-    uniform float time;
     
+    uniform float time;
     uniform mat4 mModel;
     uniform mat4 mView;
     uniform mat4 mProj;
     uniform vec3 cameraPosition;
+    uniform float maxVertexOscillation;
+    uniform float dudvTiling;
+    uniform float oscillationScale;
     
     out vec3 toCameraVector;
     out vec4 color;
@@ -30,14 +33,11 @@ const WaterShader = {
     out vec4 clipSpacePreOffset;
     out vec2 dudvTextureCoordinates;
     
-    const float dudvTiling = 0.2;
-    const float scale = 500.0;
     
     void main()
     {
         mat4 _m = mProj * mView * mModel;
-        float timePositionValue = (time + vertPosition[0]*scale + vertPosition[2]*scale);
-        vec3 offset = vec3(0.0, sin(time + vertPosition[0]*scale) + cos(time + vertPosition[2]*scale), 0.0) * 0.05;
+        vec3 offset = vec3(0.0, sin(time + vertPosition[0]*oscillationScale) + cos(time + vertPosition[2]*oscillationScale), 0.0) * maxVertexOscillation;
         color = vec4(vertColor, 1.0);        
         clipSpacePreOffset = _m * vec4(vertPosition, 1.0);
         
@@ -64,13 +64,12 @@ const WaterShader = {
     uniform float distortionMoveFactor;
     uniform vec3 directionalLightColor;
     uniform vec3 directionalLightVector;
-    
-    const float distortionStrength = 0.01;
-    const float specularReflectivity = 0.8;
-    const float shininessDampening = 7.0;
+    uniform bool distortionEnabled;
+    uniform float distortionStrength;
+    uniform float specularReflectivity;
+    uniform float shininessDampening;
     
     out vec4 outputColor;
-    const bool distortionEnabled = true;
     void main()
     {
         vec3 viewVector = normalize(toCameraVector);
@@ -100,7 +99,7 @@ const WaterShader = {
         vec3 reflectedLightVector = reflect(directionalLightVector, normal);
         float specularFactor = max(dot(reflectedLightVector, viewVector), 0.0);
         specularFactor = pow(specularFactor, shininessDampening);
-        vec3 specular = specularFactor * (specularReflectivity - fresnelFactor*0.4) * directionalLightColor;
+        vec3 specular = specularFactor * (specularReflectivity - fresnelFactor*0.7) * directionalLightColor;
     
         vec4 waterMixedFrameTextureColor = mix(texel, color, 0.3);
         outputColor = vec4(waterMixedFrameTextureColor.xyz * diffuse + specular, 1.0);

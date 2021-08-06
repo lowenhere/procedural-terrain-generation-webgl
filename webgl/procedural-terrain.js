@@ -28,12 +28,27 @@ export function Initialise(gl, canvas) {
     gl.frontFace(gl.CCW);//counter clockwise determines which side the face is facing
     gl.cullFace(gl.BACK);
 
+    //terrain types = 'WATER', 'SAND', 'GRASS', 'MOUNTAIN', 
+    let terrainConfig = {
+        WATER: -0.3,
+        SAND: -0.1,
+        GRASS: 0.2,
+        MOUNTAIN: 1
+    }
+    
+    let config = {
+        water: {
+            maxVertexOscillation: 0.05
+        }
+    }
+
     //========================================================================
     //
     //                            INIT SHADERS/PROGRAM
     //
     //========================================================================
-    FlatShader.init(gl);
+    //to clip less, we lower the clipping plane as a buffer. this is to make up for water oscillation
+    FlatShader.init(gl, terrainConfig.WATER - config.water.maxVertexOscillation*2); 
     WaterShader.init(gl);
     DirLight.initForProgram(FlatShader.program, gl);
     DirLight.initForProgram(WaterShader.program, gl);
@@ -51,14 +66,6 @@ export function Initialise(gl, canvas) {
     //                            INIT OBJECTS        
     //
     //========================================================================
-    //terrain types = 'WATER', 'SAND', 'GRASS', 'MOUNTAIN', 
-    let terrainConfig = {
-        WATER: -0.3,
-        SAND: -0.1,
-        GRASS: 0.2,
-        MOUNTAIN: 1
-    }
-    
     //returns [-1,1];
     let normalisedHeightToTerrainType = (height)=>{
         for(let terrainType in terrainConfig) {

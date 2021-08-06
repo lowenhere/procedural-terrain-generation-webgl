@@ -17,12 +17,12 @@ class Terrain extends Transform {
 
     locations = {
         uniform: {
-            model: undefined,
-            view: undefined,
-            proj: undefined,
+            mModel: undefined,
+            mView: undefined,
+            mProj: undefined,
             clipEnabled: undefined,
         }
-    };
+    };    
 
     /**
      * 
@@ -86,7 +86,7 @@ class Terrain extends Transform {
         //========================================================================
         gl.useProgram(program);
         let positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
-        let colorAttribLocation = gl.getAttribLocation(program, 'vertColor');        
+        let colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
         
         const valuesPerVertex = 6;
 
@@ -111,18 +111,18 @@ class Terrain extends Transform {
         gl.enableVertexAttribArray(positionAttribLocation);
         gl.enableVertexAttribArray(colorAttribLocation);
         
-        this.locations.uniform.model = this.gl.getUniformLocation(this.program, 'mModel');
-        this.locations.uniform.view = this.gl.getUniformLocation(this.program, 'mView');
-        this.locations.uniform.proj = this.gl.getUniformLocation(this.program, 'mProj');
-        this.locations.uniform.clipEnabled = this.gl.getUniformLocation(this.program, 'clipEnabled');
+        //LINK ALL UNIFORM LOCATIONS
+        for(let key in this.locations.uniform) {
+            this.locations.uniform[key] = gl.getUniformLocation(program, key);
+        }
     }
 
     render(Camera, clipEnabled=false) {
         this.gl.useProgram(this.program);
         this.gl.uniform1i(this.locations.uniform.clipEnabled, clipEnabled);
-        this.gl.uniformMatrix4fv(this.locations.uniform.model, this.gl.FALSE, this.modelMatrix);
-        this.gl.uniformMatrix4fv(this.locations.uniform.view, this.gl.FALSE, Camera.matrices.view);
-        this.gl.uniformMatrix4fv(this.locations.uniform.proj, this.gl.FALSE, Camera.matrices.proj);
+        this.gl.uniformMatrix4fv(this.locations.uniform.mModel, this.gl.FALSE, this.modelMatrix);
+        this.gl.uniformMatrix4fv(this.locations.uniform.mView, this.gl.FALSE, Camera.matrices.view);
+        this.gl.uniformMatrix4fv(this.locations.uniform.mProj, this.gl.FALSE, Camera.matrices.proj);
         this.gl.bindVertexArray(this.vao);
         this.gl.drawElements(this.gl.TRIANGLES, this.mesh.indices.length, this.gl.UNSIGNED_SHORT, 0);
     }

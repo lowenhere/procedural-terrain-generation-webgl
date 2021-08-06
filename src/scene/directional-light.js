@@ -3,7 +3,7 @@ import { vec3 } from "gl-matrix"
 const DirLight = {
     /** @type {WebGL2RenderingContext} */
     gl: undefined,
-    direction: vec3.fromValues(0.4, -0.8, 0.4),
+    direction: vec3.fromValues(0.3, -0.8, 0.3),
     color: vec3.fromValues(0.85,0.85,0.85),
     locations: {
         uniform: {

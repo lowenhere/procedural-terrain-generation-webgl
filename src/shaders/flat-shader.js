@@ -1,3 +1,4 @@
+import { vec4 } from "gl-matrix";
 import glUtils from "../utils/gl-utils";
 
 const FlatShader = {
@@ -7,10 +8,14 @@ const FlatShader = {
      * 
      * @param {WebGL2RenderingContext} gl 
      */
-    init(gl) {
+    init(gl, clipHeight=0.55) {
         let vertexShader = glUtils.createShader(this.vertexShaderText, gl.VERTEX_SHADER, gl);
         let fragmentShader = glUtils.createShader(this.fragmentShaderText, gl.FRAGMENT_SHADER, gl);        
         this.program = glUtils.createProgramWithShaders([vertexShader, fragmentShader], gl);
+
+        gl.useProgram(this.program);
+        let d = -clipHeight;
+        gl.uniform4fv(gl.getUniformLocation(this.program, 'clippingPlane'), vec4.fromValues(0, 1, 0, d));
     },
     vertexShaderText: `#version 300 es
     precision mediump float;
@@ -22,22 +27,22 @@ const FlatShader = {
     uniform mat4 mModel;
     uniform mat4 mView;
     uniform mat4 mProj;
+    uniform vec4 clippingPlane;
     
     out vec4 fragColor;
     out vec4 vertexWorldSpace;
     out float clip;
-    const vec4 clippingPlane = vec4(0, 1, 0, 0.55);
     
     void main()
     {   
+        vertexWorldSpace = mModel * vec4(vertPosition, 1.0);;
         if(clipEnabled == true) {
-            clip = dot(mModel * vec4(vertPosition, 1.0), clippingPlane);
+            clip = dot(vertexWorldSpace, clippingPlane);
         }
         else {
             clip = 1.0;
         }
         fragColor = vec4(vertColor, 1.0);    
-        vertexWorldSpace = mModel * vec4(vertPosition, 1.0);;
         gl_Position = mProj * mView * vertexWorldSpace;
     }
     `,
