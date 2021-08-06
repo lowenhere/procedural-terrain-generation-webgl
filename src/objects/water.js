@@ -1,17 +1,19 @@
 import { mat4 } from "gl-matrix";
 import MeshUtils from "../utils/mesh";
 
-export const Water = {
+export default class Water {
+
     /** @type {WebGL2RenderingContext} */
-    gl: undefined,
+    gl = undefined;
     /** @type {WebGLVertexArrayObject} */    
-    vao: undefined,
-    program: undefined,
-    mesh: {
+    vao = undefined;
+    program = undefined;
+    mesh = {
         indices: [],
         vertices: []
-    },
-    locations: {
+    }
+
+    locations = {
         uniform: {
             model: undefined,
             view: undefined,
@@ -22,13 +24,9 @@ export const Water = {
             dudvMap: undefined,
             cameraPosition: undefined,
         },
-    },
-    /**
-     * 
-     * @param {*} program 
-     * @param {WebGL2RenderingContext} gl 
-     */
-    init(program, gl, size=30, waterHeight=-0.1) {
+    };
+
+    constructor(program, gl, size=30, waterHeight=-0.1) {
         this.gl = gl;
         this.program = program;
         this.vao = gl.createVertexArray();
@@ -104,7 +102,8 @@ export const Water = {
         this.locations.uniform.view = this.gl.getUniformLocation(this.program, 'mView');
         this.locations.uniform.proj = this.gl.getUniformLocation(this.program, 'mProj');
         this.locations.uniform.cameraPosition = this.gl.getUniformLocation(this.program, 'cameraPosition');
-    },    
+    }
+
     loadTexture(url) {
         const image = new Image();
         const texture = this.gl.createTexture();
@@ -145,10 +144,12 @@ export const Water = {
 
         image.src = url;
         return texture;
-    },
+    };
+
     get modelMatrix(){ 
         return mat4.identity(new Float32Array(16));
-    },
+    };
+
     render(Camera, time, refractionTexture, reflectionTexture) {
         this.gl.useProgram(this.program);
         this.gl.uniform1f(this.locations.uniform.time, time/1000);

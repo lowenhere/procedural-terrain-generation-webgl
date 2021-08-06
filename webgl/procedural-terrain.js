@@ -1,10 +1,10 @@
 import { glMatrix, mat4, quat, vec3 } from 'gl-matrix';
 import Camera from '../src/scene/camera';
 import DirLight from '../src/scene/directional-light';
-import { Terrain } from '../src/objects/terrain';
-import { Water } from '../src/objects/water';
+import Water from '../src/objects/water';
 import FlatShader from '../src/shaders/flat-shader';
 import WaterShader from '../src/shaders/water-shader';
+import Terrain from '../src/objects/terrain';
 
 /**
  * 
@@ -48,9 +48,9 @@ export function Initialise(gl, canvas) {
     //
     //========================================================================
     let size = 60;
-    Terrain.init(FlatShader.program, gl, size);
+    let terrain = new Terrain(FlatShader.program, gl, size);
     let waterHeight = -0.1;
-    Water.init(WaterShader.program, gl, size, waterHeight);
+    let water =new Water(WaterShader.program, gl, size, waterHeight);
 
 
     //========================================================================
@@ -135,7 +135,7 @@ export function Initialise(gl, canvas) {
         //========================================================================
         gl.bindFramebuffer(gl.FRAMEBUFFER, refractionFrameBuffer);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        Terrain.render(Camera);
+        terrain.render(Camera);
         
         //========================================================================
         //
@@ -148,7 +148,7 @@ export function Initialise(gl, canvas) {
         let distance = (Camera.transform.position[1] - waterHeight) * 2;
         Camera.transform.position[1] -= distance;
         Camera.transform.rotation[0] = -Camera.transform.rotation[0]; //invert pitch
-        Terrain.render(Camera, true);
+        terrain.render(Camera, true);
         Camera.transform.position[1] += distance;
         Camera.transform.rotation[0] = -Camera.transform.rotation[0]; //invert pitch
 
@@ -158,8 +158,8 @@ export function Initialise(gl, canvas) {
         //
         //========================================================================
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        Terrain.render(Camera);
-        Water.render(Camera, time, refractionTexture, reflectionTexture);
+        terrain.render(Camera);
+        water.render(Camera, time, refractionTexture, reflectionTexture);
         requestAnimationFrame(loop);
     }
 

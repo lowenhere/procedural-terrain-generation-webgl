@@ -2,30 +2,34 @@ import { mat4 } from "gl-matrix";
 import MeshUtils from "../utils/mesh";
 import { perlin2 } from "../utils/perlin";
 
-export const Terrain = {
+class Terrain {
     /** @type {WebGL2RenderingContext} */
-    gl: undefined,
+    gl = undefined
     /** @type {WebGLVertexArrayObject} */    
-    vao: undefined,
-    program: undefined,
-    mesh: {
+    vao = undefined;
+    program = undefined;
+    
+    mesh = {
         indices: [],
         vertices: []
-    },
-    locations: {
+    };
+
+    locations = {
         uniform: {
             model: undefined,
             view: undefined,
             proj: undefined,
             clipEnabled: undefined,
         }
-    },
+    };
+
     /**
      * 
-     * @param {*} program 
+     * @param {WebGLProgram} program 
      * @param {WebGL2RenderingContext} gl 
+     * @param {number} size 
      */
-    init(program, gl, size=30) {
+    constructor(program, gl, size=30) {
         this.gl = gl;
         this.program = program;
         
@@ -99,10 +103,12 @@ export const Terrain = {
         this.locations.uniform.view = this.gl.getUniformLocation(this.program, 'mView');
         this.locations.uniform.proj = this.gl.getUniformLocation(this.program, 'mProj');
         this.locations.uniform.clipEnabled = this.gl.getUniformLocation(this.program, 'clipEnabled');
-    },    
+    }
+
     get modelMatrix(){ 
         return mat4.identity(new Float32Array(16));
-    },
+    }
+
     render(Camera, clipEnabled=false) {
         this.gl.useProgram(this.program);
         this.gl.uniform1i(this.locations.uniform.clipEnabled, clipEnabled);
@@ -113,3 +119,5 @@ export const Terrain = {
         this.gl.drawElements(this.gl.TRIANGLES, this.mesh.indices.length, this.gl.UNSIGNED_SHORT, 0);
     }
 }
+
+export default Terrain;
