@@ -2,6 +2,7 @@ import Head from 'next/head'
 import { useEffect, useRef } from "react"
 
 import { Initialise } from "../webgl/procedural-terrain"
+import meshLoading from '../webgl/mesh-loading'
 import styles from '../styles/Home.module.css'
 
 export default function Home() {
@@ -11,6 +12,8 @@ export default function Home() {
     const gl = ref.current.getContext('webgl2');
     
     Initialise(gl, ref.current);
+    // const loop = meshLoading(gl);
+    // requestAnimationFrame(loop);
   })
 
   return (
