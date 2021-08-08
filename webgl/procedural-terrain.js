@@ -9,6 +9,7 @@ import objString from "../assets/tree00.obj";
 import mtlString from "../assets/tree00.mtl";
 import OBJMesh from '../src/objects/obj-mesh';
 import { perlin2 } from '../src/utils/perlin';
+import { Perlin2D } from '../src/utils/noise-utils';
 
 /**
  * 
@@ -79,6 +80,8 @@ export function Initialise(gl, canvas) {
 
 
     let perlinScale=4;
+    // const p = new Perlin2D();
+    // const terrainYFunction = (x, z) => p.perlin(x/perlinScale, z/perlinScale);
     let terrainYFunction = (x,z)=>perlin2(x/perlinScale, z/perlinScale);
     let size = 60;
     let terrain = new Terrain(FlatShader.program, terrainYFunction, normalisedHeightToTerrainType, gl, {scale: vec3.fromValues(1,1.8,1)}, size);
