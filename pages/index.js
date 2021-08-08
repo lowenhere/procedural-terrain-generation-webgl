@@ -1,11 +1,13 @@
 import Head from 'next/head'
 import { useEffect, useRef, useState } from "react"
 import glReset from "gl-reset";
+import Drawer from '@material-ui/core/Drawer';
 
 import { Initialise } from "../webgl/procedural-terrain"
 import styles from '../styles/Home.module.css'
 
 export default function Home() {
+  // scene-related hooks
   const canvasRef = useRef();
   const scene = useRef({
     running: false,
@@ -34,10 +36,7 @@ export default function Home() {
         if (scene.current.running) {
           scene.current.controls.stopLoop();
           scene.current.running = false;
-        }
-        else {
-          scene.current.controls.startLoop();
-          scene.current.running = true;
+          setDrawerState({ open: true });
         }
       }
     });
@@ -56,6 +55,17 @@ export default function Home() {
     scene.current.running = true;
   }, [sceneParams]);
 
+
+  // ui-related hooks
+  const [drawerState, setDrawerState] = useState({ open: false });
+
+  const drawerOnClose = () => {
+    scene.current.controls.startLoop();
+    scene.current.running = true;
+    setDrawerState({ open: false });
+  };
+
+
   return (
     <div className={styles.container}>
       <Head>
@@ -65,9 +75,16 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
+        <Drawer
+          key="drawer"
+          anchor="left"
+          open={drawerState.open}
+          onClose={drawerOnClose}
+          variant="temporary"
+        >
+        </Drawer>
         <canvas width="720" height="480" ref={canvasRef}></canvas>
       </main>
-
     </div>
   )
 }
