@@ -1,20 +1,60 @@
 import Head from 'next/head'
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
+import glReset from "gl-reset";
 
-import { Initialise  } from "../webgl/procedural-terrain"
-import meshLoading from '../webgl/mesh-loading'
+import { Initialise } from "../webgl/procedural-terrain"
 import styles from '../styles/Home.module.css'
 
 export default function Home() {
-  const ref = useRef();
+  const canvasRef = useRef();
+  const scene = useRef({
+    running: false,
+    controls: {
+      startLoop: () => { },
+      stopLoop: () => { }
+    }
+  });
 
-  useEffect(()=>{
-    const gl = ref.current.getContext('webgl2');
-    
-    const loop = Initialise(gl, ref.current);
-    // const loop = meshLoading(gl, ref.current);
-    requestAnimationFrame(loop);
-  })
+  const [sceneParams, setSceneParams] = useState({
+    perlinParams: {
+      octaves: 2,
+      lacunarity: 2,
+      persistence: 0.1,
+      n: 3,
+      seed: '',
+      normalizeGrad: true,
+    }
+  });
+
+  // on component mount
+  useEffect(() => {
+    document.addEventListener("keydown", (e) => {
+      if (e.code == "Tab") {
+        e.preventDefault();
+        if (scene.current.running) {
+          scene.current.controls.stopLoop();
+          scene.current.running = false;
+        }
+        else {
+          scene.current.controls.startLoop();
+          scene.current.running = true;
+        }
+      }
+    });
+  }, [])
+
+  // on sceneParams change (will be called once on mount)
+  useEffect(() => {
+    // reset gl context
+    const gl = canvasRef.current.getContext('webgl2');
+    glReset(gl);
+
+    // re-initialize, set new scene controls and start scene
+    scene.current.controls = Initialise(gl, canvasRef.current, sceneParams.perlinParams);
+
+    scene.current.controls.startLoop();
+    scene.current.running = true;
+  }, [sceneParams]);
 
   return (
     <div className={styles.container}>
@@ -25,7 +65,7 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <canvas width="720" height="480" ref={ref}></canvas>
+        <canvas width="720" height="480" ref={canvasRef}></canvas>
       </main>
 
     </div>

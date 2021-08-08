@@ -5,14 +5,21 @@ import seedrandom from "seedrandom";
 class Perlin2D {
     /**
      * Perlin2D constructor
-     * @param {Number} octaves number of octaves.
-     * @param {Number} lacunarity controls increase in frequency of octaves.
-     * @param {Number} persistence controls decrease in frequency of octaves. should be in (0, 1].
-     * @param {Number} n perlin noise grid size. should be a small number for efficiency
-     * @param {String} seed seed for the random number generator.
-     * @param {Boolean} normalizeGrad if gradient magnitudes should be normalized, else magnitudes will follow a standard normal distribution.
+     * @param {Number}  params.octaves number of octaves.
+     * @param {Number}  params.lacunarity controls increase in frequency of octaves.
+     * @param {Number}  params.persistence controls decrease in frequency of octaves. should be in (0, 1].
+     * @param {Number}  params.n perlin noise grid size. should be a small number for efficiency
+     * @param {String}  params.seed seed for the random number generator.
+     * @param {Boolean} params.normalizeGrad if gradient magnitudes should be normalized, else magnitudes will follow a standard normal distribution.
      */
-    constructor(octaves = 2, lacunarity = 2, persistence = 0.1, n = 3, seed = '', normalizeGrad = true) {
+    constructor({
+        octaves = 2,
+        lacunarity = 2,
+        persistence = 0.1,
+        n = 3,
+        seed = '',
+        normalizeGrad = true
+    }) {
         this.octaves = octaves;
         this.lacunarity = lacunarity;
         this.persistence = persistence;
