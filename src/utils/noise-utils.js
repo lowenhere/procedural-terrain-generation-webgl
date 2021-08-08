@@ -1,18 +1,27 @@
 import { vec2 } from "gl-matrix";
+import random from "random";
+import seedrandom from "seedrandom";
 
 class Perlin2D {
     /**
      * Perlin2D constructor
-     * @param {Number} octaves
-     * @param {Number} lacunarity
-     * @param {Number} persistence
-     * @param {Number} n
+     * @param {Number} octaves number of octaves.
+     * @param {Number} lacunarity controls increase in frequency of octaves.
+     * @param {Number} persistence controls decrease in frequency of octaves. should be in (0, 1].
+     * @param {Number} n perlin noise grid size. should be a small number for efficiency
+     * @param {String} seed seed for the random number generator.
+     * @param {Boolean} normalizeGrad if gradient magnitudes should be normalized, else magnitudes will follow a standard normal distribution.
      */
-    constructor(octaves = 3, lacunarity = 2, persistence = 0.1, n = 10) {
+    constructor(octaves = 2, lacunarity = 2, persistence = 0.1, n = 3, seed = '', normalizeGrad = true) {
         this.octaves = octaves;
         this.lacunarity = lacunarity;
         this.persistence = persistence;
         this.n = n;
+
+        // create random number generator
+        const rng = random.clone(seedrandom(seed));
+        const rngUniform = rng.uniform();
+        const rngNormal = rng.normal();
 
         // default fade function
         this.fade = (t) => 6 * t ** 5 - 15 * t ** 4 + 10 * t ** 3;
@@ -22,8 +31,19 @@ class Perlin2D {
         this.g = Array.from(Array(n), () => new Array(n));
         for (let i = 0; i < n; i++) {
             for (let j = 0; j < n; j++) {
-                this.g[i][j] = [null, null];
-                vec2.random(this.g[i][j]);
+                // generate a random vec2
+                const g = [rngUniform(), rngUniform()];
+
+                // set its magnitude based on normalizeGrad
+                const magnitude = normalizeGrad ? 1 : Math.abs(rngNormal());
+
+                // normalize and scale
+                const ng = [null, null]; // normalized g
+                vec2.normalize(ng, g);
+                const sg = [null, null]; // scaled g
+                vec2.scale(sg, ng, magnitude);
+
+                this.g[i][j] = sg;
             }
         }
 
@@ -32,6 +52,7 @@ class Perlin2D {
             this.g[i][n - 1] = this.g[i][0];
             this.g[n - 1][i] = this.g[0][i];
         }
+
     }
 
     /**

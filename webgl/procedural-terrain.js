@@ -9,6 +9,7 @@ import objString from "../assets/tree00.obj";
 import mtlString from "../assets/tree00.mtl";
 import OBJMesh from '../src/objects/obj-mesh';
 import { perlin2 } from '../src/utils/perlin';
+import { Perlin2D } from '../src/utils/noise-utils';
 
 /**
  * 
