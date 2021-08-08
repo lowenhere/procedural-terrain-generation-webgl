@@ -50,7 +50,7 @@ const Camera = {
         //                            INIT CONTROLS                             
         //
         //========================================================================
-        document.onmousemove = (event) => {
+        canvas.onmousemove = (event) => {
             this.controls.deltaMouseX += event.movementX;
             this.controls.deltaMouseY += event.movementY;
         }
@@ -63,17 +63,17 @@ const Camera = {
             this.controls.inputKeys[event.key] = false;
         }
 
-        // document.onmousedown = (event) => {
-        //     let havePointerLock = 'pointerLockElement' in document ||
-        //     'mozPointerLockElement' in document ||
-        //     'webkitPointerLockElement' in document;
+        canvas.onmousedown = (event) => {
+            let havePointerLock = 'pointerLockElement' in document ||
+            'mozPointerLockElement' in document ||
+            'webkitPointerLockElement' in document;
         
-        //     if(havePointerLock) {
-        //         if(this.mouseLocked) document.exitPointerLock();
-        //         else this.canvas.requestPointerLock();
-        //         this.controls.mouseLocked = !this.mouseLocked;
-        //     }
-        // }
+            if(havePointerLock) {
+                if(this.mouseLocked) document.exitPointerLock();
+                else this.canvas.requestPointerLock();
+                this.controls.mouseLocked = !this.mouseLocked;
+            }
+        }
 
 
     },    
