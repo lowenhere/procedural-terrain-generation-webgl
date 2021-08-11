@@ -42,7 +42,7 @@ export default class Water extends Transform{
         }
     }
 
-    constructor(program, gl, size=30, waterHeight=-0.1, waterParams={}) {
+    constructor(program, gl, size=30, waterHeight=-0.1, waterParams={}, floorHeight=-5.0) {
         super();
         this.gl = gl;
         this.program = program;
@@ -75,17 +75,22 @@ export default class Water extends Transform{
 
         const [ posVertices, colorVertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, yFunc, colorFunc);
         const vertices = posVertices.map((_, i) => [...posVertices[i], ...colorVertices[i]]).flat();
-        this.mesh.vertices = vertices;
-        this.mesh.indices = indices;
+        
+        const [ edgePosVertices, edgeColorVertices, edgeIndices ] = MeshUtils.GenerateEdgeTriangleMesh(size, yFunc, colorFunc, 1, floorHeight, 1e-2);
+        const edgeVertices = edgePosVertices.map((_, i) => [...edgePosVertices[i], ...edgeColorVertices[i]]).flat();
+        const edgeIndicesOffset = edgeIndices.map( i => i + posVertices.length);
+
+        this.mesh.vertices = [...vertices,  ...edgeVertices];
+        this.mesh.indices = [...indices, ...edgeIndicesOffset];
 
         let vertexBufferObject = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferObject);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.mesh.vertices), gl.STATIC_DRAW);
 
         //indices buffer
         let indicesBufferObject = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBufferObject);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.mesh.indices), gl.STATIC_DRAW);
 
         //========================================================================
         //

@@ -36,7 +36,7 @@ function GenerateSquarePlaneTriangleMesh(width=10, yFunc=(x,z)=>0, colorFunc=(y)
     return [ posVertices, colorVertices, indices ]
 }
 
-function GenerateEdgeTriangleMesh(width=10, yFunc=(x, z)=>0, colorFunc=(y)=>[Math.random(), Math.random(), Math.random()], vertexStepDistance=1, floorHeight=-3){
+function GenerateEdgeTriangleMesh(width=10, yFunc=(x, z)=>0, colorFunc=(y)=>[Math.random(), Math.random(), Math.random()], vertexStepDistance=1, floorHeight=-3.0, epsilon=0){
     const topPerimeter = [];
     const bottomPerimeter = [];
     const topPerimeterColor = [];
@@ -46,7 +46,7 @@ function GenerateEdgeTriangleMesh(width=10, yFunc=(x, z)=>0, colorFunc=(y)=>[Mat
 
     // bottom edge (z = -offset)
     _.range(-offset, offset-1, vertexStepDistance).forEach((x) => {
-        const z = -offset;
+        const z = -offset + epsilon;
         const xr = (x / vertexStepDistance) + offset;
         const zr = (z / vertexStepDistance) + offset;
         topPerimeter.push([x, yFunc(xr, zr), z]);
@@ -57,7 +57,7 @@ function GenerateEdgeTriangleMesh(width=10, yFunc=(x, z)=>0, colorFunc=(y)=>[Mat
 
     // right edge (x = offset-1)
     _.range(-offset, offset-1, vertexStepDistance).forEach((z) => {
-        const x = offset-1;
+        const x = offset-1 - epsilon;
         const xr = (x / vertexStepDistance) + offset;
         const zr = (z / vertexStepDistance) + offset;
         topPerimeter.push([x, yFunc(xr, zr), z]);
@@ -68,7 +68,7 @@ function GenerateEdgeTriangleMesh(width=10, yFunc=(x, z)=>0, colorFunc=(y)=>[Mat
 
     // top edge (z = offset-1)
     _.range(offset-1, -offset+1, -vertexStepDistance).forEach((x) => {
-        const z = offset-1;
+        const z = offset-1 - epsilon;
         const xr = (x / vertexStepDistance) + offset;
         const zr = (z / vertexStepDistance) + offset;
         topPerimeter.push([x, yFunc(xr, zr), z]);
@@ -79,7 +79,7 @@ function GenerateEdgeTriangleMesh(width=10, yFunc=(x, z)=>0, colorFunc=(y)=>[Mat
 
     // bottom edge (x = -offset)
     _.range(offset-1, -offset, -vertexStepDistance).forEach((z) => {
-        const x = -offset;
+        const x = -offset + epsilon ;
         const xr = (x / vertexStepDistance) + offset;
         const zr = (z / vertexStepDistance) + offset;
         topPerimeter.push([x, yFunc(xr, zr), z]);

@@ -31,7 +31,7 @@ class Terrain extends Transform {
      * @param {WebGL2RenderingContext} gl 
      * @param {number} size 
      */
-    constructor(program, yFunc, heightToTerrainType, gl, transform={}, size=30, waterHeight=-0.1) {
+    constructor(program, yFunc, heightToTerrainType, gl, transform={}, size=30, waterHeight=-0.1, floorHeight=-5.0) {
         super(transform.position, transform.rotation, transform.scale);
         this.gl = gl;
         this.program = program;
@@ -78,11 +78,11 @@ class Terrain extends Transform {
 
         // create vertices for the shell floor
         // get the floor height
-        const yHeights = posVertices.map(([,y,]) => y);
-        // minimum of yHeights and waterHeight. we use reduce because its faster for large arrays
-        const floorHeight = yHeights.reduce((p, v) => (p < v ? p : v), waterHeight);
-        // create another square plane triangle mesh at the bottom
-        const floorYFunc = () => floorHeight;
+        // const yHeights = posVertices.map(([,y,]) => y);
+        // // minimum of yHeights and waterHeight. we use reduce because its faster for large arrays
+        // const floorHeight = yHeights.reduce((p, v) => (p < v ? p : v), waterHeight);
+        // // create another square plane triangle mesh at the bottom
+        // const floorYFunc = () => floorHeight;
         const floorColorFunc = () => shellColor;
         // const [ floorPosVertices, floorColorVertices, floorIndices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, floorYFunc, floorColorFunc);
         // const floorVertices = floorPosVertices.map((_, i) => [...floorPosVertices[i], ...floorColorVertices[i]]).flat();
