@@ -3,7 +3,7 @@ import React from "react";
 import { useEffect, useRef, useState } from "react";
 import _ from "lodash";
 
-import glReset from "gl-reset";
+// import glReset from "gl-reset";
 import Drawer from '@material-ui/core/Drawer';
 
 import { Initialise } from "../webgl/procedural-terrain"
@@ -13,7 +13,19 @@ import { Menu, ChevronLeft, ChevronRight } from '@material-ui/icons';
 
 const paramInputs = [
   {
+    name: "size",
+    group: 'generation',
+    type: "slider",
+    props: {
+      min: 10,
+      max: 40,
+      step: 1,
+      marks: true,
+    }
+  },
+  {
     name: "octaves",
+    group: 'perlin',
     type: "slider",
     props: {
       min: 1,
@@ -24,6 +36,7 @@ const paramInputs = [
   },
   {
     name: "lacunarity",
+    group: 'perlin',
     type: "slider",
     props: {
       min: 0.0,
@@ -34,6 +47,7 @@ const paramInputs = [
   },
   {
     name: "n",
+    group: 'perlin',
     type: "slider",
     props: {
       min: 1,
@@ -44,6 +58,7 @@ const paramInputs = [
   },
   {
     name: "seed",
+    group: 'perlin',
     type: "textfield",
     props: {
       defaultValue: "",
@@ -51,11 +66,12 @@ const paramInputs = [
   },
   {
     name: "normalizeGrad",
+    group: 'perlin',
     type: "switch",
     props: {
       defaultChecked: true,
     }
-  }
+  },
 ]
 
 
@@ -63,7 +79,6 @@ export default function Home() {
   // scene-related hooks
   const canvasRef = useRef();
   const scene = useRef({
-    running: false,
     controls: {
       startLoop: () => { },
       stopLoop: () => { }
@@ -71,15 +86,37 @@ export default function Home() {
   });
 
   const [sceneParams, setSceneParams] = useState({
-    perlinParams: {
+    generation: {
+      size: 20
+    },
+    perlin: {
       octaves: 2,
       lacunarity: 2,
       persistence: 0.1,
       n: 3,
       seed: '',
       normalizeGrad: true,
+    },
+    terrain: {
+      WATER: -0.3,
+      SAND: -0.1,
+      GRASS: 0.2,
+      MOUNTAIN: 1
+    },
+    water: {
+      maxVertexOscillation: 0.05
     }
   });
+
+
+  function createOnParamChange(item) {    
+    return (event, value)=>{
+      let newValue = item.type == 'slider' ? value : event.target.value;
+
+      setSceneParams({...sceneParams, [item.group]: {...sceneParams[item.group], [item.name]: newValue}});
+    };
+  }
+
 
   // hooks for metrics reporting
   const [metrics, setSceneMetrics] = useState({
@@ -117,13 +154,12 @@ export default function Home() {
   useEffect(() => {
     // reset gl context
     const gl = canvasRef.current.getContext('webgl2');
-    glReset(gl);
+    // glReset(gl);
 
     // re-initialize, set new scene controls and start scene
-    scene.current.controls = Initialise(gl, canvasRef.current, sceneParams.perlinParams, reportTimeCallback);
-
+    scene.current.controls.stopLoop(); //kill old loop
+    scene.current.controls = Initialise(gl, canvasRef.current, sceneParams, reportTimeCallback);
     scene.current.controls.startLoop();
-    scene.current.running = true;
   }, [sceneParams]);
 
   // ui-related hooks
@@ -136,28 +172,28 @@ export default function Home() {
       return (
         <React.Fragment>
           <Typography>{item.name}</Typography>
-          <Slider {...item.props} />
+          <Slider {...item.props} value={sceneParams[item.group][item.name]} onChange={createOnParamChange(item)} />
         </React.Fragment>
       )
     }
 
-    if (item.type == "textfield"){
+    if (item.type == "textfield") {
       return (
         <React.Fragment>
           <Typography>{item.name}</Typography>
-          <TextField {...item.props} />
+          <TextField {...item.props} value={sceneParams[item.group][item.name]} onChange={createOnParamChange(item)}/>
         </React.Fragment>
       )
     }
 
-    if (item.type == "switch"){
+    if (item.type == "switch") {
       return (
         <React.Fragment>
           <Typography>{item.name}</Typography>
-          <Switch {...item.props} />
+          <Switch {...item.props} value={sceneParams[item.group][item.name]} onChange={createOnParamChange(item)}/>
         </React.Fragment>
       )
-    } 
+    }
 
   })
 
@@ -176,7 +212,7 @@ export default function Home() {
             anchor="left"
             open={drawerOpen}
           >
-            <Container style={{ width: "300px"}}>
+            <Container style={{ width: "300px" }}>
               <IconButton onClick={handleDrawerClose}>
                 <ChevronLeft />
               </IconButton>

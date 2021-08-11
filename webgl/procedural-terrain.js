@@ -10,14 +10,16 @@ import mtlString from "../assets/tree00.mtl";
 import OBJMesh from '../src/objects/obj-mesh';
 import { perlin2 } from '../src/utils/perlin';
 import { Perlin2D } from '../src/utils/noise-utils';
+import random from "random";
+import seedrandom from "seedrandom";
 
 /**
  * 
  * @param {WebGL2RenderingContext} gl 
  * @param {HTMLCanvasElement} canvas
- * @param {Object} perlinParams
+ * @param {Object} params
  */
-export function Initialise(gl, canvas, perlinParams = {}, reportTimeCallback = () => {}) {
+export function Initialise(gl, canvas, params = {perlin: {}}, reportTimeCallback = () => {}) {
     console.log("Initialising Web GL");
 
     //set canvas size
@@ -30,27 +32,13 @@ export function Initialise(gl, canvas, perlinParams = {}, reportTimeCallback = (
     gl.frontFace(gl.CCW);//counter clockwise determines which side the face is facing
     gl.cullFace(gl.BACK);
 
-    //terrain types = 'WATER', 'SAND', 'GRASS', 'MOUNTAIN', 
-    let terrainConfig = {
-        WATER: -0.3,
-        SAND: -0.1,
-        GRASS: 0.2,
-        MOUNTAIN: 1
-    }
-    
-    let config = {
-        water: {
-            maxVertexOscillation: 0.05
-        }
-    }
-
     //========================================================================
     //
     //                            INIT SHADERS/PROGRAM
     //
     //========================================================================
     //to clip less, we lower the clipping plane as a buffer. this is to make up for water oscillation
-    FlatShader.init(gl, terrainConfig.WATER - config.water.maxVertexOscillation*2); 
+    FlatShader.init(gl, params.terrain.WATER - params.water.maxVertexOscillation*2); 
     WaterShader.init(gl);
     DirLight.initForProgram(FlatShader.program, gl);
     DirLight.initForProgram(WaterShader.program, gl);
@@ -70,37 +58,40 @@ export function Initialise(gl, canvas, perlinParams = {}, reportTimeCallback = (
     //========================================================================
     //returns [-1,1];
     let normalisedHeightToTerrainType = (height)=>{
-        for(let terrainType in terrainConfig) {
-            let upperBound = terrainConfig[terrainType];
+        for(let terrainType in params.terrain) {
+            let upperBound = params.terrain[terrainType];
             if(height <= upperBound) {
                 return terrainType;
             }
         }
-        return Object.keys(terrainConfig)[0];
+        return Object.keys(params.terrain)[0];
     }
 
 
-    let perlinScale=4;
-    const p = new Perlin2D(perlinParams);
+    let perlinScale=4;   
+    const p = new Perlin2D(params.perlin);
     const terrainYFunction = (x, z) => p.perlin(x/perlinScale, z/perlinScale);
     // let terrainYFunction = (x,z)=>perlin2(x/perlinScale, z/perlinScale);
-    let size = 60;
+    let size = params.generation.size;
     let terrain = new Terrain(FlatShader.program, terrainYFunction, normalisedHeightToTerrainType, gl, {scale: vec3.fromValues(1,1.8,1)}, size);
-    let water = new Water(WaterShader.program, gl, size, terrainConfig['WATER']);
+    let water = new Water(WaterShader.program, gl, size, params.terrain['WATER']);
 
     let sceneObjects = [];
+    
     
     //tree generator
     let treeScale = vec3.fromValues(0.5, 0.5, 0.5);
     let treeSpawnProbability = 0.05;
     for(let x=0; x<size; x++) {
         for(let z=0; z<size; z++) {
+            const rng = random.clone(seedrandom(params.perlin.seed + x + z));
+            const rngUniform = rng.uniform();
             let sampleHeight = terrainYFunction(x, z);
             let terrainType = normalisedHeightToTerrainType(sampleHeight);
             if(terrainType == 'GRASS') {
-                if(Math.random() < treeSpawnProbability) {
+                if(rngUniform() < treeSpawnProbability) {
                     let scale = vec3.create();
-                    vec3.scale(scale, treeScale, Math.max(Math.random(), 0.9));
+                    vec3.scale(scale, treeScale, Math.max(rngUniform(), 0.9));
                     let tree = new OBJMesh(FlatShader.program, gl, objString, mtlString, {position: vec3.fromValues(x-size/2, sampleHeight*1.8, z-size/2), scale});
                     sceneObjects.push(tree);
                 }
@@ -206,7 +197,7 @@ export function Initialise(gl, canvas, perlinParams = {}, reportTimeCallback = (
         gl.bindFramebuffer(gl.FRAMEBUFFER, reflectionFrameBuffer);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         //assuming water is at pos y = 0, then camera to water distance is y pos of camera
-        let distance = (Camera.transform.position[1] - terrainConfig['WATER']) * 2;
+        let distance = (Camera.transform.position[1] - params.terrain['WATER']) * 2;
         Camera.transform.position[1] -= distance;
         Camera.transform.rotation[0] = -Camera.transform.rotation[0]; //invert pitch
         terrain.render(Camera, true);

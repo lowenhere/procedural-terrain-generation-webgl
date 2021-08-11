@@ -69,9 +69,9 @@ const Camera = {
             'webkitPointerLockElement' in document;
         
             if(havePointerLock) {
-                if(this.mouseLocked) document.exitPointerLock();
+                if(this.controls.mouseLocked) document.exitPointerLock();
                 else this.canvas.requestPointerLock();
-                this.controls.mouseLocked = !this.mouseLocked;
+                this.controls.mouseLocked = !this.controls.mouseLocked;
             }
         }
 
@@ -110,6 +110,10 @@ const Camera = {
         let deltaAngleVert = this.controls.deltaMouseY * Math.PI/10;
         this.controls.deltaMouseX = 0;
         this.controls.deltaMouseY = 0;
+
+        if(!this.controls.mouseLocked) {
+            return;
+        }
         
         this.transform.rotation[1] -= deltaAngleHor;
         this.transform.rotation[0] = Math.min(89, Math.max(deltaAngleVert + this.transform.rotation[0], -89));
