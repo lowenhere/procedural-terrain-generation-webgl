@@ -1,5 +1,4 @@
 import { mat4 } from "gl-matrix";
-import { performance } from 'perf_hooks';
 
 
 import glUtils from "../src/utils/gl-utils";

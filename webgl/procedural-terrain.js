@@ -1,5 +1,4 @@
 import { glMatrix, mat4, quat, vec3 } from 'gl-matrix';
-import { performance } from 'perf_hooks';
 import Camera from '../src/scene/camera';
 import DirLight from '../src/scene/directional-light';
 import Water from '../src/objects/water';
