@@ -44,7 +44,7 @@ const meshLoading = (gl, canvas) => {
     const mesh = new OBJMesh(FlatShader.program, gl, objString, mtlString);
 
     let time = 0;
-    let startTime = Date.now();
+    let startTime = performance.now();
     let lastTime = 0;
     const loop = (now) => {        
         // clear screen
@@ -57,7 +57,7 @@ const meshLoading = (gl, canvas) => {
 
         Camera.update(deltaTime);
         //rotate
-        // const angle = Date.now() / 2000 / 6 * 2 * Math.PI;
+        // const angle = performance.now() / 2000 / 6 * 2 * Math.PI;
         // mat4.rotate(mWorld, rotationMatrix, angle, [0, 1, 0]); //rotate around y axis
 
         // render

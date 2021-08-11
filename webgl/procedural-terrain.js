@@ -163,7 +163,7 @@ export function Initialise(gl, canvas, params = {perlin: {}}, reportTimeCallback
     //========================================================================
 
     let time = 0;
-    let startTime = Date.now();
+    let startTime = performance.now();
     let lastTime = 0;
     let stop = false;
 
@@ -221,7 +221,7 @@ export function Initialise(gl, canvas, params = {perlin: {}}, reportTimeCallback
             object.render(Camera);
         }
 
-        reportTimeCallback(Date.now());
+        reportTimeCallback(performance.now());
 
         if (!stop) {
             requestAnimationFrame(loop);

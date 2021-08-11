@@ -193,7 +193,7 @@ const spinningCube = (gl) => {
 	mat4.identity(identityMatrix);
 	let angle = 0;
 	const loop = () => {
-		angle = Date.now() / 1000 / 6 * 2 * Math.PI;
+		angle = performance.now() / 1000 / 6 * 2 * Math.PI;
 		mat4.rotate(yRotationMatrix, identityMatrix, angle, [0, 1, 0]);
 		mat4.rotate(xRotationMatrix, identityMatrix, angle / 4, [1, 0, 0]);
 		mat4.mul(worldMatrix, yRotationMatrix, xRotationMatrix);

@@ -304,7 +304,7 @@ export default function Home() {
   });
 
   // report fps based on average of the last 10 frames
-  let prevTime = Date.now();
+  let prevTime = performance.now();
   let frameCounter = 0;
   // callback passed to loop, call on each loop to get the frame rate
   const reportTimeCallback = (currentFrameTime) => {

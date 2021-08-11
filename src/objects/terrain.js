@@ -84,17 +84,17 @@ class Terrain extends Transform {
         // create another square plane triangle mesh at the bottom
         const floorYFunc = () => floorHeight;
         const floorColorFunc = () => shellColor;
-        const [ floorPosVertices, floorColorVertices, floorIndices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, floorYFunc, floorColorFunc);
-        const floorVertices = floorPosVertices.map((_, i) => [...floorPosVertices[i], ...floorColorVertices[i]]).flat();
-        const floorIndicesOffset = floorIndices.map( i => i + posVertices.length );
+        // const [ floorPosVertices, floorColorVertices, floorIndices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, floorYFunc, floorColorFunc);
+        // const floorVertices = floorPosVertices.map((_, i) => [...floorPosVertices[i], ...floorColorVertices[i]]).flat();
+        // const floorIndicesOffset = floorIndices.map( i => i + posVertices.length );
 
         // for the edge
         const [ edgePosVertices, edgeColorVertices, edgeIndices ] = MeshUtils.GenerateEdgeTriangleMesh(size, yFunc, floorColorFunc, 1, floorHeight);
         const edgeVertices = edgePosVertices.map((_, i) => [...edgePosVertices[i], ...edgeColorVertices[i]]).flat();
-        const edgeIndicesOffset = edgeIndices.map( i => i + posVertices.length + floorPosVertices.length);
+        const edgeIndicesOffset = edgeIndices.map( i => i + posVertices.length);
 
-        this.mesh.vertices = [...vertices, ...floorVertices, ...edgeVertices];
-        this.mesh.indices = [...indices, ...floorIndicesOffset, ...edgeIndicesOffset];
+        this.mesh.vertices = [...vertices,  ...edgeVertices];
+        this.mesh.indices = [...indices, ...edgeIndicesOffset];
 
         let vertexBufferObject = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferObject);
