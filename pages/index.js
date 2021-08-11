@@ -3,7 +3,7 @@ import React from "react";
 import { useEffect, useRef, useState } from "react";
 import _ from "lodash";
 
-// import glReset from "gl-reset";
+import glReset from "gl-reset";
 import Drawer from '@material-ui/core/Drawer';
 
 import { Initialise } from "../webgl/procedural-terrain"
@@ -334,7 +334,7 @@ export default function Home() {
   useEffect(() => {
     // reset gl context
     const gl = canvasRef.current.getContext('webgl2');
-    // glReset(gl);
+    glReset(gl);
 
     // re-initialize, set new scene controls and start scene
     scene.current.controls.stopLoop(); //kill old loop
