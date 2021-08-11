@@ -5,8 +5,10 @@ import Water from '../src/objects/water';
 import FlatShader from '../src/shaders/flat-shader';
 import WaterShader from '../src/shaders/water-shader';
 import Terrain from '../src/objects/terrain';
-import objString from "../assets/tree00.obj";
-import mtlString from "../assets/tree00.mtl";
+import treeObjString from "../assets/tree00.obj";
+import treeMtlString from "../assets/tree00.mtl";
+import rockObjString from "../assets/rock00.obj";
+import rockMtlString from "../assets/rock00.mtl";
 import OBJMesh from '../src/objects/obj-mesh';
 import { perlin2 } from '../src/utils/perlin';
 import { Perlin2D } from '../src/utils/noise-utils';
@@ -75,7 +77,7 @@ export function Initialise(gl, canvas, params = {perlin: {}}, reportTimeCallback
     const terrainYFunction = (x, z) => p.perlin(x, z) * params.perlin.heightScale;
     // let terrainYFunction = (x,z)=>perlin2(x/perlinScale, z/perlinScale);
     let size = params.generation.size;
-    let terrain = new Terrain(FlatShader.program, terrainYFunction, heightToTerrainType, gl, {scale: vec3.fromValues(1,1.8,1)}, size);
+    let terrain = new Terrain(FlatShader.program, terrainYFunction, heightToTerrainType, gl, {scale: vec3.fromValues(1,1,1)}, size);
     let water = new Water(WaterShader.program, gl, size, WATER_HEIGHT, params.water);
 
     let sceneObjects = [];
@@ -94,8 +96,31 @@ export function Initialise(gl, canvas, params = {perlin: {}}, reportTimeCallback
                 if(rngUniform() < treeSpawnProbability) {
                     let scale = vec3.create();
                     vec3.scale(scale, treeScale, Math.max(rngUniform(), 0.9));
-                    let tree = new OBJMesh(FlatShader.program, gl, objString, mtlString, {position: vec3.fromValues(x-size/2, sampleHeight*1.8, z-size/2), scale});
+                    let tree = new OBJMesh(FlatShader.program, gl, treeObjString, treeMtlString, {position: vec3.fromValues(x-size/2, sampleHeight, z-size/2), scale});
                     sceneObjects.push(tree);
+                }
+            }
+        }
+    }
+    
+
+    //rock generator
+    let rockScale = vec3.fromValues(1.5, 1.5, 1.5);
+    let rockSpawnProbability = 0.03;
+    for(let x=0; x<size; x++) {
+        for(let z=0; z<size; z++) {
+            const rng = random.clone(seedrandom(params.perlin.seed + x + z));
+            const rngUniform = rng.uniform(0, 1);
+            let sampleHeight = terrainYFunction(x, z);
+            let terrainType = heightToTerrainType(sampleHeight);
+            let rockRotation = vec3.fromValues(0, rngUniform()*90, 0)
+
+            if(terrainType == 'WATER') {
+                if(rngUniform() < rockSpawnProbability) {
+                    let scale = vec3.create();
+                    vec3.scale(scale, rockScale, rngUniform());
+                    let rock = new OBJMesh(FlatShader.program, gl, rockObjString, rockMtlString, {position: vec3.fromValues(x-size/2, sampleHeight, z-size/2), scale, rotation: rockRotation});
+                    sceneObjects.push(rock);
                 }
             }
         }
