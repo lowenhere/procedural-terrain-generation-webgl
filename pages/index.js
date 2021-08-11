@@ -2,6 +2,7 @@ import Head from 'next/head';
 import React from "react";
 import { useEffect, useRef, useState } from "react";
 import _ from "lodash";
+import { performance } from 'perf_hooks';
 
 import glReset from "gl-reset";
 import Drawer from '@material-ui/core/Drawer';
