@@ -1,4 +1,6 @@
 import { glMatrix, mat4 } from "gl-matrix";
+import { performance } from 'perf_hooks';
+
 
 const vsSource = `
 precision mediump float;
