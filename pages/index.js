@@ -453,7 +453,14 @@ export default function Home() {
           <a style={{ position: "absolute", top: "0.5rem", right: "0.5rem", zIndex: 10 }}>FPS: {metrics.fps}</a>
           <canvas width="720" height="480" ref={canvasRef}></canvas>
         </Container>
+        <div style={{position: 'absolute', bottom: 12, left: 12, display: 'flex', flexDirection: 'column'}}>
+          <Typography color='primary'>WASD: move </Typography>
+          <Typography color='primary'>Q: up</Typography>
+          <Typography color='primary'>E: down</Typography>
+          <Typography color='primary'>Space: move faster</Typography>
+          <Typography color='primary'>Left click to enter/exit FPS mode</Typography>
 
+        </div>
       </main>
     </div>
   )
