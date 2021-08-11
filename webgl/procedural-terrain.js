@@ -5,8 +5,10 @@ import Water from '../src/objects/water';
 import FlatShader from '../src/shaders/flat-shader';
 import WaterShader from '../src/shaders/water-shader';
 import Terrain from '../src/objects/terrain';
-import objString from "../assets/tree00.obj";
-import mtlString from "../assets/tree00.mtl";
+import treeObjString from "../assets/tree00.obj";
+import treeMtlString from "../assets/tree00.mtl";
+import rockObjString from "../assets/rock00.obj";
+import rockMtlString from "../assets/rock00.mtl";
 import OBJMesh from '../src/objects/obj-mesh';
 import { perlin2 } from '../src/utils/perlin';
 import { Perlin2D } from '../src/utils/noise-utils';
@@ -83,7 +85,6 @@ export function Initialise(gl, canvas, params = {perlin: {}}, reportTimeCallback
     
     //tree generator
     let treeScale = vec3.fromValues(0.5, 0.5, 0.5);
-    let treeSpawnProbability = 0.05;
     for(let x=0; x<size; x++) {
         for(let z=0; z<size; z++) {
             const rng = random.clone(seedrandom(params.perlin.seed + x + z));
@@ -91,11 +92,33 @@ export function Initialise(gl, canvas, params = {perlin: {}}, reportTimeCallback
             let sampleHeight = terrainYFunction(x, z);
             let terrainType = heightToTerrainType(sampleHeight);
             if(terrainType == 'GRASS') {
-                if(rngUniform() < treeSpawnProbability) {
+                if(rngUniform() < params.proceduralObjects.treeProbability) {
                     let scale = vec3.create();
                     vec3.scale(scale, treeScale, Math.max(rngUniform(), 0.9));
-                    let tree = new OBJMesh(FlatShader.program, gl, objString, mtlString, {position: vec3.fromValues(x-size/2, sampleHeight*1.8, z-size/2), scale});
+                    let tree = new OBJMesh(FlatShader.program, gl, treeObjString, treeMtlString, {position: vec3.fromValues(x-size/2, sampleHeight, z-size/2), scale});
                     sceneObjects.push(tree);
+                }
+            }
+        }
+    }
+    
+
+    //rock generator
+    let rockScale = vec3.fromValues(1.5, 1.5, 1.5);
+    for(let x=0; x<size; x++) {
+        for(let z=0; z<size; z++) {
+            const rng = random.clone(seedrandom(params.perlin.seed + x + z));
+            const rngUniform = rng.uniform(0, 1);
+            let sampleHeight = terrainYFunction(x, z);
+            let terrainType = heightToTerrainType(sampleHeight);
+            let rockRotation = vec3.fromValues(0, rngUniform()*90, 0)
+
+            if(terrainType == 'WATER') {
+                if(rngUniform() < params.proceduralObjects.treeProbability) {
+                    let scale = vec3.create();
+                    vec3.scale(scale, rockScale, rngUniform());
+                    let rock = new OBJMesh(FlatShader.program, gl, rockObjString, rockMtlString, {position: vec3.fromValues(x-size/2, sampleHeight, z-size/2), scale, rotation: rockRotation});
+                    sceneObjects.push(rock);
                 }
             }
         }
@@ -128,10 +151,17 @@ export function Initialise(gl, canvas, params = {perlin: {}}, reportTimeCallback
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, refractionTexture, level);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, refractionTexture, level);    
     if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
         console.error('frame buffer attachment failed');
     }
+
+    const refractionDepthTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, refractionDepthTexture);
+    gl.texImage2D(gl.TEXTURE_2D, level, gl.DEPTH_COMPONENT32F, textureWidth, textureHeight, border, gl.DEPTH_COMPONENT, gl.FLOAT, data);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, refractionDepthTexture, level);
    
     //========================================================================
     //
@@ -156,6 +186,12 @@ export function Initialise(gl, canvas, params = {perlin: {}}, reportTimeCallback
         console.error('frame buffer attachment failed');
     }
 
+    const reflectionDepthTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, reflectionDepthTexture);
+    gl.texImage2D(gl.TEXTURE_2D, level, gl.DEPTH_COMPONENT32F, textureWidth, textureHeight, border, gl.DEPTH_COMPONENT, gl.FLOAT, data);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, reflectionDepthTexture, level);
     //========================================================================
     //
     //                       MAIN RENDER LOOP

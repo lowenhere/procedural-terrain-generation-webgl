@@ -105,7 +105,7 @@ const paramInputs = [
     type: "slider",
     props: {
       min: 0.1,
-      max: 8,
+      max: 14,
       step: 0.5,
     }
   },
@@ -243,7 +243,37 @@ const paramInputs = [
       step: 0.1,
     }
   },
-  
+  //========================================================================
+  //
+  //                            TREES AND ROCKS CONTROLS                             
+  //
+  //========================================================================
+  {
+    name: 'Procedural Objects',
+    type: 'header'
+  },
+  {
+    name: "tree probability",
+    key: "treeProbability",
+    group: 'proceduralObjects',
+    type: "slider",
+    props: {
+      min: 0,
+      max: 0.2,
+      step: 0.01,
+    }
+  },
+  {
+    name: "rock probability",
+    key: "rockProbability",
+    group: 'proceduralObjects',
+    type: "slider",
+    props: {
+      min: 0,
+      max: 0.2,
+      step: 0.01,
+    }
+  },
 ]
 
 
@@ -266,12 +296,12 @@ export default function Home() {
       lacunarity: 4,
       persistence: 0.4,
       perlinScale: 20.0,
-      heightScale: 4.1,
+      heightScale: 7.4,
       seed: '',
       normalizeGrad: true,
     },
     terrain: {
-      WATER: -0.8,
+      WATER: -0.4,
       SAND: -0.3,
       GRASS: -0.1,
       MOUNTAIN: 0.5,
@@ -285,6 +315,10 @@ export default function Home() {
       maxVertexOscillation: 0.05,
       dudvTiling: 0.2,
       oscillationScale: 500.0,
+    }, 
+    proceduralObjects: {
+      treeProbability: 0.05,
+      rockProbability: 0.05,
     }
   });
 
@@ -419,7 +453,14 @@ export default function Home() {
           <a style={{ position: "absolute", top: "0.5rem", right: "0.5rem", zIndex: 10 }}>FPS: {metrics.fps}</a>
           <canvas width="720" height="480" ref={canvasRef}></canvas>
         </Container>
+        <div style={{position: 'absolute', bottom: 12, left: 12, display: 'flex', flexDirection: 'column'}}>
+          <Typography color='primary'>WASD: move </Typography>
+          <Typography color='primary'>Q: up</Typography>
+          <Typography color='primary'>E: down</Typography>
+          <Typography color='primary'>Space: move faster</Typography>
+          <Typography color='primary'>Left click to enter/exit FPS mode</Typography>
 
+        </div>
       </main>
     </div>
   )

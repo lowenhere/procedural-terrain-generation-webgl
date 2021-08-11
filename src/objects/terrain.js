@@ -48,7 +48,7 @@ class Terrain extends Transform {
             let terrainType = heightToTerrainType(y);
             switch (terrainType) {
                 case 'WATER':
-                    return [0.8, 0.8, 0.3];
+                    return [0.7, 0.7, 0.3];
                     break;
                 case 'SAND':
                     return [0.8, 0.8, 0.3];

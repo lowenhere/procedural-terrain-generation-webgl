@@ -22,7 +22,7 @@ const Camera = {
         aspectRatio: 1
     },
     controls: {
-        moveSpeed: 6,
+        moveSpeed: 8,
         deltaMouseX: 0,
         deltaMouseY: 0,
         inputKeys: {},
@@ -69,12 +69,24 @@ const Camera = {
             'webkitPointerLockElement' in document;
         
             if(havePointerLock) {
-                if(this.controls.mouseLocked) document.exitPointerLock();
-                else this.canvas.requestPointerLock();
+                if(this.controls.mouseLocked) {
+                    document.exitPointerLock();
+                }
+                else {
+                    this.canvas.requestPointerLock();
+                }
+                
                 this.controls.mouseLocked = !this.controls.mouseLocked;
             }
         }
 
+        document.addEventListener('pointerlockchange', ()=>{
+            if(document.pointerLockElement !== canvas && document.mozPointerLockElement !== canvas && this.controls.mouseLocked) {
+                this.controls.mouseLocked = false;
+            }
+
+        }, false);
+            
 
     },    
     computeRotationQuaternion() {
