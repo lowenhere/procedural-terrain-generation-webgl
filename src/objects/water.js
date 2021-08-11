@@ -42,12 +42,20 @@ export default class Water extends Transform{
         }
     }
 
-    constructor(program, gl, size=30, waterHeight=-0.1) {
+    constructor(program, gl, size=30, waterHeight=-0.1, waterParams={}) {
         super();
         this.gl = gl;
         this.program = program;
         this.vao = gl.createVertexArray();
         gl.bindVertexArray(this.vao);
+
+        this.uniformConfigurations.bool.distortionEnabled = waterParams.distortionEnabled;
+        this.uniformConfigurations.float.distortionStrength = waterParams.distortionStrength;
+        this.uniformConfigurations.float.specularReflectivity = waterParams.specularReflectivity;
+        this.uniformConfigurations.float.shininessDampening = waterParams.shininessDampening;
+        this.uniformConfigurations.float.maxVertexOscillation = waterParams.maxVertexOscillation;
+        this.uniformConfigurations.float.dudvTiling = waterParams.dudvTiling;
+        this.uniformConfigurations.float.oscillationScale = waterParams.oscillationScale;
 
         //========================================================================
         //

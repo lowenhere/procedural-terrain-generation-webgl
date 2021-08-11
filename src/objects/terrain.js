@@ -58,6 +58,9 @@ class Terrain extends Transform {
                 case 'MOUNTAIN':
                     return [0.7, 0.7, 0.5];
                     break;
+                case 'MOUNTAINTOP':
+                    return [0.9, 0.9, 0.9];
+                    break;
                     
                 default:
                     console.warn('invalid terrain type:', terrainType);

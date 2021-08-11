@@ -12,66 +12,238 @@ import { Container, Button, IconButton, Typography, Slider, TextField, Switch } 
 import { Menu, ChevronLeft, ChevronRight } from '@material-ui/icons';
 
 const paramInputs = [
+  //========================================================================
+  //
+  //                            GENERATION CONTROLS                             
+  //
+  //========================================================================
   {
-    name: "size",
-    group: 'generation',
-    type: "slider",
-    props: {
-      min: 10,
-      max: 40,
-      step: 1,
-      marks: true,
-    }
-  },
-  {
-    name: "octaves",
-    group: 'perlin',
-    type: "slider",
-    props: {
-      min: 1,
-      max: 5,
-      step: 1,
-      marks: true,
-    }
-  },
-  {
-    name: "lacunarity",
-    group: 'perlin',
-    type: "slider",
-    props: {
-      min: 0.0,
-      max: 1.0,
-      step: 0.05,
-      marks: false,
-    }
-  },
-  {
-    name: "n",
-    group: 'perlin',
-    type: "slider",
-    props: {
-      min: 1,
-      max: 20,
-      step: 1,
-      marks: true,
-    }
+    name: 'Generation',
+    type: 'header'
   },
   {
     name: "seed",
+    key: "seed",
     group: 'perlin',
     type: "textfield",
     props: {
       defaultValue: "",
     }
-  },
+  },  
   {
-    name: "normalizeGrad",
-    group: 'perlin',
-    type: "switch",
+    name: "size",
+    key: "size",
+    group: 'generation',
+    type: "slider",
     props: {
-      defaultChecked: true,
+      min: 10,
+      max: 60,
+      step: 1,
+      marks: true,
     }
   },
+  //========================================================================
+  //
+  //                            PERLIN CONTROLS                             
+  //
+  //========================================================================
+  {
+    name: 'Perlin',
+    type: 'header'
+  },
+  {
+    name: "octaves",
+    key: "octaves",
+    group: 'perlin',
+    type: "slider",
+    props: {
+      min: 1,
+      max: 10,
+      step: 1,
+      marks: true,
+    }
+  },
+  {
+    name: "persistence",
+    key: "persistence",
+    group: 'perlin',
+    type: "slider",
+    props: {
+      min: 0,
+      max: 1,
+      step: 0.1,
+      marks: true,
+    }
+  },
+  {
+    name: "lacunarity",
+    key: "lacunarity",
+    group: 'perlin',
+    type: "slider",
+    props: {
+      min: 1.0,
+      max: 5.0,
+      step: 0.1,
+      marks: false,
+    }
+  },
+  {
+    name: "perlin scale",
+    key: "perlinScale",
+    group: 'perlin',
+    type: "slider",
+    props: {
+      min: 0.1,
+      max: 20,
+      step: 0.5,
+    }
+  },
+  {
+    name: "height scale",
+    key: "heightScale",
+    group: 'perlin',
+    type: "slider",
+    props: {
+      min: 0.1,
+      max: 8,
+      step: 0.5,
+    }
+  },
+  //========================================================================
+  //
+  //                            TERRAIN TYPE CONTROLS                             
+  //
+  //========================================================================
+  {
+    name: 'Terrain Types',
+    type: 'header'
+  },
+  {
+    name: "mountain height",
+    key: "MOUNTAIN",
+    group: 'terrain',
+    type: "slider",
+    props: {
+      min: -1,
+      max: 1,
+      step: 0.1,
+    }
+  },
+  {
+    name: "grass height",
+    key: "GRASS",
+    group: 'terrain',
+    type: "slider",
+    props: {
+      min: -1,
+      max: 1,
+      step: 0.1,
+    }
+  },
+  {
+    name: "sand height",
+    key: "SAND",
+    group: 'terrain',
+    type: "slider",
+    props: {
+      min: -1,
+      max: 1,
+      step: 0.1,
+    }
+  },
+  {
+    name: "water height",
+    key: "WATER",
+    group: 'terrain',
+    type: "slider",
+    props: {
+      min: -1,
+      max: 1,
+      step: 0.1,
+    }
+  },
+  //========================================================================
+  //
+  //                            WATER CONTROLS                             
+  //
+  //========================================================================
+  {
+    name: 'Water',
+    type: 'header'
+  },
+  {
+    name: "water amplitude",
+    key: "maxVertexOscillation",
+    group: 'water',
+    type: "slider",
+    props: {
+      min: 0,
+      max: 0.4,
+      step: 0.05,
+    }
+  },
+  {
+    name: "water oscillation hor scale",
+    key: "oscillationScale",
+    group: 'water',
+    type: "slider",
+    props: {
+      min: 300,
+      max: 600,
+      step: 50,
+    }
+  },
+  {
+    name: "water distortion",
+    key: "distortionEnabled",
+    group: 'water',
+    type: "switch",
+  },
+  {
+    name: "water distortion strength",
+    key: "distortionStrength",
+    group: 'water',
+    type: "slider",
+    props: {
+      min: 0,
+      max: 0.02,
+      step: 0.005,
+    }
+  },
+  {
+    name: "water distortion tiling",
+    key: "dudvTiling",
+    group: 'water',
+    type: "slider",
+    props: {
+      min: 0.1,
+      max: 0.9,
+      step: 0.1,
+    }
+  },
+  {
+    name: "water shininess dampening",
+    key: "shininessDampening",
+    group: 'water',
+    type: "slider",
+    props: {
+      min: 1,
+      max: 10,
+      step: 1,
+    }
+  },
+  {
+    name: "water specular reflectivity",
+    key: "specularReflectivity",
+    group: 'water',
+    type: "slider",
+    props: {
+      min: 0.1,
+      max: 1.0,
+      step: 0.1,
+    }
+  },
+  
 ]
 
 
@@ -87,33 +259,41 @@ export default function Home() {
 
   const [sceneParams, setSceneParams] = useState({
     generation: {
-      size: 20
+      size: 40
     },
     perlin: {
-      octaves: 2,
-      lacunarity: 2,
-      persistence: 0.1,
-      n: 3,
+      octaves: 6,
+      lacunarity: 4,
+      persistence: 0.4,
+      perlinScale: 20.0,
+      heightScale: 2.5,
       seed: '',
       normalizeGrad: true,
     },
     terrain: {
       WATER: -0.3,
-      SAND: -0.1,
+      SAND: 0,
       GRASS: 0.2,
-      MOUNTAIN: 1
+      MOUNTAIN: 0.7,
     },
     water: {
-      maxVertexOscillation: 0.05
+      maxVertexOscillation: 0.05,
+      distortionEnabled: true,
+      distortionStrength: 0.01,
+      shininessDampening: 2.0,
+      specularReflectivity: 0.8,
+      maxVertexOscillation: 0.05,
+      dudvTiling: 0.2,
+      oscillationScale: 500.0,
     }
   });
 
 
   function createOnParamChange(item) {    
     return (event, value)=>{
-      let newValue = item.type == 'slider' ? value : event.target.value;
+      let newValue = item.type == 'slider' ? value : item.type == 'switch' ? event.target.checked : event.target.value;
 
-      setSceneParams({...sceneParams, [item.group]: {...sceneParams[item.group], [item.name]: newValue}});
+      setSceneParams({...sceneParams, [item.group]: {...sceneParams[item.group], [item.key]: newValue}});
     };
   }
 
@@ -167,31 +347,39 @@ export default function Home() {
   const handleDrawerOpen = () => { setDrawerOpen(true) };
   const handleDrawerClose = () => { setDrawerOpen(false) };
 
-  const drawerItems = paramInputs.map((item) => {
+  const drawerItems = paramInputs.map((item, i) => {
     if (item.type == "slider") {
       return (
-        <React.Fragment>
-          <Typography>{item.name}</Typography>
-          <Slider {...item.props} value={sceneParams[item.group][item.name]} onChange={createOnParamChange(item)} />
-        </React.Fragment>
+        <div key={`${i}`} style={{marginBottom: 4}}>
+          <Typography>{item.name}: {sceneParams[item.group][item.key]}</Typography>
+          <Slider {...item.props} value={sceneParams[item.group][item.key]} onChange={createOnParamChange(item)} />
+        </div>
       )
     }
 
     if (item.type == "textfield") {
       return (
-        <React.Fragment>
+        <div key={`${i}`} style={{marginBottom: 4}}>
           <Typography>{item.name}</Typography>
-          <TextField {...item.props} value={sceneParams[item.group][item.name]} onChange={createOnParamChange(item)}/>
-        </React.Fragment>
+          <TextField {...item.props} defaultValue={sceneParams[item.group][item.key]} onChange={createOnParamChange(item)}/>
+        </div>
       )
     }
 
     if (item.type == "switch") {
       return (
-        <React.Fragment>
+        <div key={`${i}`} style={{marginBottom: 4}}>
           <Typography>{item.name}</Typography>
-          <Switch {...item.props} value={sceneParams[item.group][item.name]} onChange={createOnParamChange(item)}/>
-        </React.Fragment>
+          <Switch   {...item.props} color='primary' checked={sceneParams[item.group][item.key]} onChange={createOnParamChange(item)}/>
+        </div>
+      )
+    }
+  
+    if (item.type == "header") {
+      return (
+        <div key={`${i}`} style={{marginBottom: 4}}>
+          <Typography style={{fontSize: '1.3rem',fontWeight: 'bold'}} color='primary'>{item.name}</Typography>
+        </div>
       )
     }
 
@@ -213,7 +401,7 @@ export default function Home() {
             open={drawerOpen}
           >
             <Container style={{ width: "300px" }}>
-              <IconButton onClick={handleDrawerClose}>
+              <IconButton style={{marginLeft: -20}} onClick={handleDrawerClose}>
                 <ChevronLeft />
               </IconButton>
 
