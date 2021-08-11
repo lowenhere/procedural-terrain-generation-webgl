@@ -73,7 +73,8 @@ export default class Water extends Transform{
         let yFunc = (x,z)=>waterHeight;
         let colorFunc = (y)=>[52/255,235/255,229/255];
 
-        let [ vertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, yFunc, colorFunc);
+        const [ posVertices, colorVertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, yFunc, colorFunc);
+        const vertices = posVertices.map((_, i) => [...posVertices[i], ...colorVertices[i]]).flat();
         this.mesh.vertices = vertices;
         this.mesh.indices = indices;
 
