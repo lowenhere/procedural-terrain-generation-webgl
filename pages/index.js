@@ -1,8 +1,11 @@
 import Head from 'next/head'
 import { useEffect, useRef, useState } from "react"
+import _ from "lodash"
+
 import glReset from "gl-reset";
 import Drawer from '@material-ui/core/Drawer';
 
+import StatsOverlayCanvasWrapper from "../src/components/stats-overlay"
 import { Initialise } from "../webgl/procedural-terrain"
 import styles from '../styles/Home.module.css'
 
@@ -28,18 +31,35 @@ export default function Home() {
     }
   });
 
+  const [metrics, setSceneMetrics] = useState({
+    fps: 0,
+  });
+
+  // report fps based on average of the last 10 frames
+  let prevTime = performance.now();
+  let frameCounter = 0;
+  // callback passed to loop, call on each loop to get the frame rate
+  const reportTimeCallback = (currentFrameTime) => {
+    if (frameCounter < 5) {
+      frameCounter++;
+      return;
+    }
+
+    const deltaFrameTime = currentFrameTime - prevTime;
+    const fps = Math.round(5 * (1000 / deltaFrameTime));
+
+    setSceneMetrics({
+      ...metrics,
+      fps,
+    });
+
+    prevTime = currentFrameTime;
+    frameCounter = 0;
+  }
+
   // on component mount
   useEffect(() => {
-    document.addEventListener("keydown", (e) => {
-      if (e.code == "Tab") {
-        e.preventDefault();
-        if (scene.current.running) {
-          scene.current.controls.stopLoop();
-          scene.current.running = false;
-          setDrawerState({ open: true });
-        }
-      }
-    });
+
   }, [])
 
   // on sceneParams change (will be called once on mount)
@@ -49,21 +69,11 @@ export default function Home() {
     glReset(gl);
 
     // re-initialize, set new scene controls and start scene
-    scene.current.controls = Initialise(gl, canvasRef.current, sceneParams.perlinParams);
+    scene.current.controls = Initialise(gl, canvasRef.current, sceneParams.perlinParams, reportTimeCallback);
 
     scene.current.controls.startLoop();
     scene.current.running = true;
   }, [sceneParams]);
-
-
-  // ui-related hooks
-  const [drawerState, setDrawerState] = useState({ open: false });
-
-  const drawerOnClose = () => {
-    scene.current.controls.startLoop();
-    scene.current.running = true;
-    setDrawerState({ open: false });
-  };
 
 
   return (
@@ -75,15 +85,9 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <Drawer
-          key="drawer"
-          anchor="left"
-          open={drawerState.open}
-          onClose={drawerOnClose}
-          variant="temporary"
-        >
-        </Drawer>
-        <canvas width="720" height="480" ref={canvasRef}></canvas>
+        <StatsOverlayCanvasWrapper fps={metrics.fps}>
+          <canvas width="720" height="480" ref={canvasRef}></canvas>
+        </StatsOverlayCanvasWrapper>
       </main>
     </div>
   )

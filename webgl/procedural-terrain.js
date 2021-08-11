@@ -17,7 +17,7 @@ import { Perlin2D } from '../src/utils/noise-utils';
  * @param {HTMLCanvasElement} canvas
  * @param {Object} perlinParams
  */
-export function Initialise(gl, canvas, perlinParams = {}) {
+export function Initialise(gl, canvas, perlinParams = {}, reportTimeCallback = () => {}) {
     console.log("Initialising Web GL");
 
     //set canvas size
@@ -227,6 +227,8 @@ export function Initialise(gl, canvas, perlinParams = {}) {
         for(let object of sceneObjects) {
             object.render(Camera);
         }
+
+        reportTimeCallback(performance.now());
 
         if (!stop) {
             requestAnimationFrame(loop);
