@@ -1,13 +1,63 @@
-import Head from 'next/head'
-import { useEffect, useRef, useState } from "react"
-import _ from "lodash"
+import Head from 'next/head';
+import React from "react";
+import { useEffect, useRef, useState } from "react";
+import _ from "lodash";
 
 import glReset from "gl-reset";
 import Drawer from '@material-ui/core/Drawer';
 
-import StatsOverlayCanvasWrapper from "../src/components/stats-overlay"
 import { Initialise } from "../webgl/procedural-terrain"
 import styles from '../styles/Home.module.css'
+import { Container, Button, IconButton, Typography, Slider, TextField, Switch } from '@material-ui/core';
+import { Menu, ChevronLeft, ChevronRight } from '@material-ui/icons';
+
+const paramInputs = [
+  {
+    name: "octaves",
+    type: "slider",
+    props: {
+      min: 1,
+      max: 5,
+      step: 1,
+      marks: true,
+    }
+  },
+  {
+    name: "lacunarity",
+    type: "slider",
+    props: {
+      min: 0.0,
+      max: 1.0,
+      step: 0.05,
+      marks: false,
+    }
+  },
+  {
+    name: "n",
+    type: "slider",
+    props: {
+      min: 1,
+      max: 20,
+      step: 1,
+      marks: true,
+    }
+  },
+  {
+    name: "seed",
+    type: "textfield",
+    props: {
+      defaultValue: "",
+    }
+  },
+  {
+    name: "normalizeGrad",
+    type: "switch",
+    props: {
+      defaultChecked: true,
+    }
+  }
+]
+
 
 export default function Home() {
   // scene-related hooks
@@ -31,6 +81,7 @@ export default function Home() {
     }
   });
 
+  // hooks for metrics reporting
   const [metrics, setSceneMetrics] = useState({
     fps: 0,
   });
@@ -75,6 +126,40 @@ export default function Home() {
     scene.current.running = true;
   }, [sceneParams]);
 
+  // ui-related hooks
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const handleDrawerOpen = () => { setDrawerOpen(true) };
+  const handleDrawerClose = () => { setDrawerOpen(false) };
+
+  const drawerItems = paramInputs.map((item) => {
+    if (item.type == "slider") {
+      return (
+        <React.Fragment>
+          <Typography>{item.name}</Typography>
+          <Slider {...item.props} />
+        </React.Fragment>
+      )
+    }
+
+    if (item.type == "textfield"){
+      return (
+        <React.Fragment>
+          <Typography>{item.name}</Typography>
+          <TextField {...item.props} />
+        </React.Fragment>
+      )
+    }
+
+    if (item.type == "switch"){
+      return (
+        <React.Fragment>
+          <Typography>{item.name}</Typography>
+          <Switch {...item.props} />
+        </React.Fragment>
+      )
+    } 
+
+  })
 
   return (
     <div className={styles.container}>
@@ -85,9 +170,32 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <StatsOverlayCanvasWrapper fps={metrics.fps}>
+        <Container disableGutters={true} maxWidth={false}>
+          <Drawer
+            variant="persistent"
+            anchor="left"
+            open={drawerOpen}
+          >
+            <Container style={{ width: "300px"}}>
+              <IconButton onClick={handleDrawerClose}>
+                <ChevronLeft />
+              </IconButton>
+
+              {drawerItems}
+            </Container>
+          </Drawer>
+
+
+          <IconButton
+            style={{ position: "absolute", top: "0.5rem", left: "0.5rem", zIndex: 10 }}
+            onClick={handleDrawerOpen}
+          >
+            <Menu />
+          </IconButton>
+          <a style={{ position: "absolute", top: "0.5rem", right: "0.5rem", zIndex: 10 }}>FPS: {metrics.fps}</a>
           <canvas width="720" height="480" ref={canvasRef}></canvas>
-        </StatsOverlayCanvasWrapper>
+        </Container>
+
       </main>
     </div>
   )
