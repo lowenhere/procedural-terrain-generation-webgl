@@ -266,7 +266,7 @@ export default function Home() {
       lacunarity: 4,
       persistence: 0.4,
       perlinScale: 20.0,
-      heightScale: 3.6,
+      heightScale: 4.1,
       seed: '',
       normalizeGrad: true,
     },
