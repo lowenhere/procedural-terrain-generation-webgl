@@ -155,6 +155,13 @@ export function Initialise(gl, canvas, params = {perlin: {}}, reportTimeCallback
     if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
         console.error('frame buffer attachment failed');
     }
+
+    const refractionDepthTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, refractionDepthTexture);
+    gl.texImage2D(gl.TEXTURE_2D, level, gl.DEPTH_COMPONENT32F, textureWidth, textureHeight, border, gl.DEPTH_COMPONENT, gl.FLOAT, data);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, refractionDepthTexture, level);
    
     //========================================================================
     //
@@ -179,12 +186,12 @@ export function Initialise(gl, canvas, params = {perlin: {}}, reportTimeCallback
         console.error('frame buffer attachment failed');
     }
 
-    const depthTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+    const reflectionDepthTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, reflectionDepthTexture);
     gl.texImage2D(gl.TEXTURE_2D, level, gl.DEPTH_COMPONENT32F, textureWidth, textureHeight, border, gl.DEPTH_COMPONENT, gl.FLOAT, data);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTexture, level);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, reflectionDepthTexture, level);
     //========================================================================
     //
     //                       MAIN RENDER LOOP
