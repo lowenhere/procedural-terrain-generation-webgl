@@ -44,7 +44,9 @@ const meshLoading = (gl, canvas) => {
     const mesh = new OBJMesh(FlatShader.program, gl, objString, mtlString);
 
     let time = 0;
-    let startTime = performance.now();
+    let startTime = 0;
+    if (typeof window !== "undefined"){ startTime = performance.now()};
+
     let lastTime = 0;
     const loop = (now) => {        
         // clear screen
