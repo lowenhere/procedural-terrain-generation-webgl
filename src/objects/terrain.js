@@ -1,4 +1,5 @@
 import { mat4 } from "gl-matrix";
+import { floor } from "lodash";
 import MeshUtils from "../utils/mesh";
 import { perlin2 } from "../utils/perlin";
 import Transform from "./transform";
@@ -12,7 +13,7 @@ class Terrain extends Transform {
     
     mesh = {
         indices: [],
-        vertices: []
+        vertices: [],
     };
 
     locations = {
@@ -30,7 +31,7 @@ class Terrain extends Transform {
      * @param {WebGL2RenderingContext} gl 
      * @param {number} size 
      */
-    constructor(program, yFunc, heightToTerrainType, gl, transform={}, size=30) {
+    constructor(program, yFunc, heightToTerrainType, gl, transform={}, size=30, waterHeight=-0.1, floorHeight=-5.0) {
         super(transform.position, transform.rotation, transform.scale);
         this.gl = gl;
         this.program = program;
@@ -69,18 +70,40 @@ class Terrain extends Transform {
             }
         }
 
-        let [ vertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, yFunc, colorFunc);
-        this.mesh.vertices = vertices;
-        this.mesh.indices = indices;
+        const [ posVertices, colorVertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, yFunc, colorFunc);
+        const vertices = posVertices.map((_, i) => [...posVertices[i], ...colorVertices[i]]).flat();
+
+        // for the shell
+        const shellColor = [0.7, 0.7, 0.5];
+
+        // create vertices for the shell floor
+        // get the floor height
+        // const yHeights = posVertices.map(([,y,]) => y);
+        // // minimum of yHeights and waterHeight. we use reduce because its faster for large arrays
+        // const floorHeight = yHeights.reduce((p, v) => (p < v ? p : v), waterHeight);
+        // // create another square plane triangle mesh at the bottom
+        // const floorYFunc = () => floorHeight;
+        const floorColorFunc = () => shellColor;
+        // const [ floorPosVertices, floorColorVertices, floorIndices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, floorYFunc, floorColorFunc);
+        // const floorVertices = floorPosVertices.map((_, i) => [...floorPosVertices[i], ...floorColorVertices[i]]).flat();
+        // const floorIndicesOffset = floorIndices.map( i => i + posVertices.length );
+
+        // for the edge
+        const [ edgePosVertices, edgeColorVertices, edgeIndices ] = MeshUtils.GenerateEdgeTriangleMesh(size, yFunc, floorColorFunc, 1, floorHeight);
+        const edgeVertices = edgePosVertices.map((_, i) => [...edgePosVertices[i], ...edgeColorVertices[i]]).flat();
+        const edgeIndicesOffset = edgeIndices.map( i => i + posVertices.length);
+
+        this.mesh.vertices = [...vertices,  ...edgeVertices];
+        this.mesh.indices = [...indices, ...edgeIndicesOffset];
 
         let vertexBufferObject = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferObject);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.mesh.vertices), gl.STATIC_DRAW);
 
         //indices buffer
         let indicesBufferObject = gl.createBuffer();
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBufferObject);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.mesh.indices), gl.STATIC_DRAW);
 
         //========================================================================
         //
