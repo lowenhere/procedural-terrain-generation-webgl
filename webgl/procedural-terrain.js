@@ -85,7 +85,6 @@ export function Initialise(gl, canvas, params = {perlin: {}}, reportTimeCallback
     
     //tree generator
     let treeScale = vec3.fromValues(0.5, 0.5, 0.5);
-    let treeSpawnProbability = 0.05;
     for(let x=0; x<size; x++) {
         for(let z=0; z<size; z++) {
             const rng = random.clone(seedrandom(params.perlin.seed + x + z));
@@ -93,7 +92,7 @@ export function Initialise(gl, canvas, params = {perlin: {}}, reportTimeCallback
             let sampleHeight = terrainYFunction(x, z);
             let terrainType = heightToTerrainType(sampleHeight);
             if(terrainType == 'GRASS') {
-                if(rngUniform() < treeSpawnProbability) {
+                if(rngUniform() < params.proceduralObjects.treeProbability) {
                     let scale = vec3.create();
                     vec3.scale(scale, treeScale, Math.max(rngUniform(), 0.9));
                     let tree = new OBJMesh(FlatShader.program, gl, treeObjString, treeMtlString, {position: vec3.fromValues(x-size/2, sampleHeight, z-size/2), scale});
@@ -106,7 +105,6 @@ export function Initialise(gl, canvas, params = {perlin: {}}, reportTimeCallback
 
     //rock generator
     let rockScale = vec3.fromValues(1.5, 1.5, 1.5);
-    let rockSpawnProbability = 0.03;
     for(let x=0; x<size; x++) {
         for(let z=0; z<size; z++) {
             const rng = random.clone(seedrandom(params.perlin.seed + x + z));
@@ -116,7 +114,7 @@ export function Initialise(gl, canvas, params = {perlin: {}}, reportTimeCallback
             let rockRotation = vec3.fromValues(0, rngUniform()*90, 0)
 
             if(terrainType == 'WATER') {
-                if(rngUniform() < rockSpawnProbability) {
+                if(rngUniform() < params.proceduralObjects.treeProbability) {
                     let scale = vec3.create();
                     vec3.scale(scale, rockScale, rngUniform());
                     let rock = new OBJMesh(FlatShader.program, gl, rockObjString, rockMtlString, {position: vec3.fromValues(x-size/2, sampleHeight, z-size/2), scale, rotation: rockRotation});

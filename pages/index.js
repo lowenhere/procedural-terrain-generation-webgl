@@ -243,7 +243,37 @@ const paramInputs = [
       step: 0.1,
     }
   },
-  
+  //========================================================================
+  //
+  //                            TREES AND ROCKS CONTROLS                             
+  //
+  //========================================================================
+  {
+    name: 'Procedural Objects',
+    type: 'header'
+  },
+  {
+    name: "tree probability",
+    key: "treeProbability",
+    group: 'proceduralObjects',
+    type: "slider",
+    props: {
+      min: 0,
+      max: 0.2,
+      step: 0.01,
+    }
+  },
+  {
+    name: "rock probability",
+    key: "rockProbability",
+    group: 'proceduralObjects',
+    type: "slider",
+    props: {
+      min: 0,
+      max: 0.2,
+      step: 0.01,
+    }
+  },
 ]
 
 
@@ -285,6 +315,10 @@ export default function Home() {
       maxVertexOscillation: 0.05,
       dudvTiling: 0.2,
       oscillationScale: 500.0,
+    }, 
+    proceduralObjects: {
+      treeProbability: 0.05,
+      rockProbability: 0.05,
     }
   });
 
