@@ -94,7 +94,7 @@ const paramInputs = [
     type: "slider",
     props: {
       min: 0.1,
-      max: 20,
+      max: 40,
       step: 0.5,
     }
   },
