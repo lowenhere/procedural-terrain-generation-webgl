@@ -37,7 +37,7 @@ const paramInputs = [
     type: "slider",
     props: {
       min: 10,
-      max: 60,
+      max: 150,
       step: 1,
       marks: true,
     }
