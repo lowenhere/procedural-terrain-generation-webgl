@@ -104,8 +104,6 @@ function GenerateEdgeTriangleMesh(width=10, yFunc=(x, z)=>0, colorFunc=(y)=>[Mat
         indices.push(a, c, b, a, d, c);
     });
 
-    console.log(posVertices[0], posVertices[pl], posVertices[pl+1]);
-
     return [ posVertices, colorVertices, indices ];
 }
 
