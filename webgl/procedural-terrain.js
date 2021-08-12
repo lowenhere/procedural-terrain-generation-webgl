@@ -77,7 +77,7 @@ export function Initialise(gl, canvas, params = { perlin: {} }, reportTimeCallba
     const terrainYFunction = (x, z) => p.perlin(x, z) * params.perlin.heightScale;
     // let terrainYFunction = (x,z)=>perlin2(x/perlinScale, z/perlinScale);
     let size = params.generation.size;
-    let terrain = new Terrain(FlatShader.program, terrainYFunction, heightToTerrainType, gl, { scale: vec3.fromValues(1, 1.8, 1) }, size, WATER_HEIGHT);
+    let terrain = new Terrain(FlatShader.program, terrainYFunction, heightToTerrainType, gl, { scale: vec3.fromValues(1, 1, 1) }, size, WATER_HEIGHT);
     let water = new Water(WaterShader.program, gl, size, WATER_HEIGHT, params.water);
 
     let sceneObjects = [];
@@ -85,8 +85,8 @@ export function Initialise(gl, canvas, params = { perlin: {} }, reportTimeCallba
 
     //tree generator
     let treeScale = vec3.fromValues(0.5, 0.5, 0.5);
-    for (let x = 0; x < size; x++) {
-        for (let z = 0; z < size; z++) {
+    for (let x = 1; x < size-1; x++) {
+        for (let z = 1; z < size-1; z++) {
             const rng = random.clone(seedrandom(params.perlin.seed + x + z));
             const rngUniform = rng.uniform();
             let sampleHeight = terrainYFunction(x, z);
@@ -105,8 +105,8 @@ export function Initialise(gl, canvas, params = { perlin: {} }, reportTimeCallba
 
     //rock generator
     let rockScale = vec3.fromValues(1.5, 1.5, 1.5);
-    for (let x = 0; x < size; x++) {
-        for (let z = 0; z < size; z++) {
+    for (let x = 1; x < size-1; x++) {
+        for (let z = 1; z < size-1; z++) {
             const rng = random.clone(seedrandom(params.perlin.seed + x + z));
             const rngUniform = rng.uniform(0, 1);
             let sampleHeight = terrainYFunction(x, z);
