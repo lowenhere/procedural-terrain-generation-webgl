@@ -254,10 +254,16 @@ export function Initialise(gl, canvas, params = { perlin: {} }, reportTimeCallba
         //
         //========================================================================
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        terrain.render(Camera);
-        water.render(Camera, time, refractionTexture, reflectionTexture);
-        for (let object of sceneObjects) {
-            object.render(Camera);
+        if(params.renderer.terrainEnabled) {
+            terrain.render(Camera);
+            
+            for (let object of sceneObjects) {
+                object.render(Camera);
+            }
+        }
+
+        if(params.renderer.waterEnabled) {
+            water.render(Camera, time, refractionTexture, reflectionTexture);
         }
 
         if (typeof window !== "undefined") {
