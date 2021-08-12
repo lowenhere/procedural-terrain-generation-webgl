@@ -284,8 +284,20 @@ const paramInputs = [
     type: 'header'
   },
   {
+    name: "water edge",
+    key: "waterEdgeEnabled",
+    group: 'renderer',
+    type: "switch",
+  },
+  {
     name: "water",
     key: "waterEnabled",
+    group: 'renderer',
+    type: "switch",
+  },
+  {
+    name: "terrain edge",
+    key: "terrainEdgeEnabled",
     group: 'renderer',
     type: "switch",
   },
@@ -343,7 +355,9 @@ export default function Home() {
     },
     renderer: {
       waterEnabled: true,
+      waterEdgeEnabled: true,
       terrainEnabled: true,
+      terrainEdgeEnabled: true,
     }
   });
 

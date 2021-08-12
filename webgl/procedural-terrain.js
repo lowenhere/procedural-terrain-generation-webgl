@@ -77,8 +77,9 @@ export function Initialise(gl, canvas, params = { perlin: {} }, reportTimeCallba
     const terrainYFunction = (x, z) => p.perlin(x, z) * params.perlin.heightScale;
     // let terrainYFunction = (x,z)=>perlin2(x/perlinScale, z/perlinScale);
     let size = params.generation.size;
-    let terrain = new Terrain(FlatShader.program, terrainYFunction, heightToTerrainType, gl, { scale: vec3.fromValues(1, 1, 1) }, size, WATER_HEIGHT);
-    let water = new Water(WaterShader.program, gl, size, WATER_HEIGHT, params.water);
+    console.log(params);
+    let terrain = new Terrain(FlatShader.program, terrainYFunction, heightToTerrainType, gl, { scale: vec3.fromValues(1, 1, 1) }, size, -5.0, params.renderer.terrainEdgeEnabled);
+    let water = new Water(WaterShader.program, gl, size, WATER_HEIGHT, params.water, -5.0, params.renderer.waterEdgeEnabled);
 
     let sceneObjects = [];
 

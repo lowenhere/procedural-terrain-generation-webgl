@@ -42,7 +42,7 @@ export default class Water extends Transform{
         }
     }
 
-    constructor(program, gl, size=30, waterHeight=-0.1, waterParams={}, floorHeight=-5.0) {
+    constructor(program, gl, size=30, waterHeight=-0.1, waterParams={}, floorHeight=-5.0, renderEdge=true) {
         super();
         this.gl = gl;
         this.program = program;
@@ -76,12 +76,19 @@ export default class Water extends Transform{
         const [ posVertices, colorVertices, indices ] = MeshUtils.GenerateSquarePlaneTriangleMesh(size, yFunc, colorFunc);
         const vertices = posVertices.map((_, i) => [...posVertices[i], ...colorVertices[i]]).flat();
         
-        const [ edgePosVertices, edgeColorVertices, edgeIndices ] = MeshUtils.GenerateEdgeTriangleMesh(size, yFunc, colorFunc, 1, floorHeight, 1e-2);
-        const edgeVertices = edgePosVertices.map((_, i) => [...edgePosVertices[i], ...edgeColorVertices[i]]).flat();
-        const edgeIndicesOffset = edgeIndices.map( i => i + posVertices.length);
+        if (renderEdge){
+            const [ edgePosVertices, edgeColorVertices, edgeIndices ] = MeshUtils.GenerateEdgeTriangleMesh(size, yFunc, colorFunc, 1, floorHeight, 1e-2);
+            const edgeVertices = edgePosVertices.map((_, i) => [...edgePosVertices[i], ...edgeColorVertices[i]]).flat();
+            const edgeIndicesOffset = edgeIndices.map( i => i + posVertices.length);
+    
+            this.mesh.vertices = [...vertices,  ...edgeVertices];
+            this.mesh.indices = [...indices, ...edgeIndicesOffset];
+        }
+        else {
+            this.mesh.vertices = vertices;
+            this.mesh.indices = indices;
+        }
 
-        this.mesh.vertices = [...vertices,  ...edgeVertices];
-        this.mesh.indices = [...indices, ...edgeIndicesOffset];
 
         let vertexBufferObject = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferObject);
