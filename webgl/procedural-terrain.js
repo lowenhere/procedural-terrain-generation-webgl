@@ -114,7 +114,7 @@ export function Initialise(gl, canvas, params = { perlin: {} }, reportTimeCallba
             let rockRotation = vec3.fromValues(0, rngUniform() * 90, 0)
 
             if (terrainType == 'WATER') {
-                if (rngUniform() < params.proceduralObjects.treeProbability) {
+                if (rngUniform() < params.proceduralObjects.rockProbability) {
                     let scale = vec3.create();
                     vec3.scale(scale, rockScale, rngUniform());
                     let rock = new OBJMesh(FlatShader.program, gl, rockObjString, rockMtlString, { position: vec3.fromValues(x - size / 2, sampleHeight, z - size / 2), scale, rotation: rockRotation });
