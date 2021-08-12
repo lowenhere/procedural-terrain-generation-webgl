@@ -37,7 +37,7 @@ const WaterShader = {
     void main()
     {
         mat4 _m = mProj * mView * mModel;
-        vec3 offset = vec3(0.0, sin(time + (vertPosition[2]+vertPosition[0])*oscillationScale), 0.0) * maxVertexOscillation;
+        vec3 offset = vec3(0.0, sin(time + vertPosition[2]*oscillationScale) + cos(time + vertPosition[2]*vertPosition[0]*oscillationScale), 0.0) * maxVertexOscillation;
         color = vec4(vertColor, 1.0);        
         clipSpacePreOffset = _m * vec4(vertPosition, 1.0);
         

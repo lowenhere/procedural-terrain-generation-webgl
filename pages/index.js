@@ -37,7 +37,7 @@ const paramInputs = [
     type: "slider",
     props: {
       min: 10,
-      max: 60,
+      max: 150,
       step: 1,
       marks: true,
     }
@@ -274,6 +274,27 @@ const paramInputs = [
       step: 0.01,
     }
   },
+  //========================================================================
+  //
+  //                            RENDER CONTROLS
+  //
+  //========================================================================
+  {
+    name: 'Renderer',
+    type: 'header'
+  },
+  {
+    name: "water",
+    key: "waterEnabled",
+    group: 'renderer',
+    type: "switch",
+  },
+  {
+    name: "terrain",
+    key: "terrainEnabled",
+    group: 'renderer',
+    type: "switch",
+  },
 ]
 
 
@@ -319,6 +340,10 @@ export default function Home() {
     proceduralObjects: {
       treeProbability: 0.05,
       rockProbability: 0.05,
+    },
+    renderer: {
+      waterEnabled: true,
+      terrainEnabled: true,
     }
   });
 
